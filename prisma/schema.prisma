@@ -1,0 +1,400 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          UserRole  @default(STUDENT)
+  studentId     String?   @unique
+  teacherId     String?   @unique
+  phone         String?
+  address       String?
+  dateOfBirth   DateTime?
+  profileImage  String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  studentProfile Student?
+  teacherProfile Teacher?
+  donations      Donation[]
+  examResults    ExamResult[]
+  attendance     Attendance[]
+  notifications  Notification[]
+  assignmentSubmissions AssignmentSubmission[]
+
+  @@map("users")
+}
+
+model Student {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rollNumber   String   @unique
+  class        String
+  section      String?
+  admissionDate DateTime @default(now())
+  fatherName   String
+  motherName   String?
+  guardianPhone String
+  emergencyContact String?
+  bloodGroup   String?
+  medicalInfo  String?
+  feeStatus    FeeStatus @default(PENDING)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  examResults  ExamResult[]
+  attendance   Attendance[]
+  feePayments  FeePayment[]
+  libraryBooks LibraryIssue[]
+
+  @@map("students")
+}
+
+model Teacher {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employeeId   String   @unique
+  department   String
+  subjects     String // JSON string of subjects array
+  qualification String
+  experience   Int      // Years of experience
+  joiningDate  DateTime @default(now())
+  salary       Float?
+  isClassTeacher Boolean @default(false)
+  classAssigned String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  attendance   Attendance[]
+  examResults  ExamResult[]
+  notifications Notification[]
+  assignments  Assignment[]
+
+  @@map("teachers")
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  eventType   EventType
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  isPublic    Boolean   @default(true)
+  imageUrl    String?
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("events")
+}
+
+model Article {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  excerpt     String?
+  author      String
+  category    String
+  tags        String // JSON string of tags array
+  imageUrl    String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("articles")
+}
+
+model MediaFile {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  fileName    String
+  filePath    String
+  fileType    MediaType
+  fileSize    Int
+  category    String
+  tags        String // JSON string of tags array
+  uploadedBy  String
+  isPublic    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("media_files")
+}
+
+model Donation {
+  id            String        @id @default(cuid())
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id])
+  donorName     String
+  donorEmail    String?
+  donorPhone    String?
+  amount        Float
+  donationType  DonationType
+  paymentMethod PaymentMethod
+  transactionId String?
+  status        PaymentStatus @default(PENDING)
+  message       String?
+  isAnonymous   Boolean       @default(false)
+  receiptUrl    String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("donations")
+}
+
+model ExamResult {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  teacherId String
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+  examName  String
+  subject   String
+  maxMarks  Int
+  obtainedMarks Int
+  grade     String?
+  remarks   String?
+  examDate  DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("exam_results")
+}
+
+model Attendance {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id])
+  studentId String?
+  student   Student?       @relation(fields: [studentId], references: [id])
+  teacherId String?
+  teacher   Teacher?       @relation(fields: [teacherId], references: [id])
+  date      DateTime
+  status    AttendanceStatus
+  remarks   String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([userId, date])
+  @@map("attendance")
+}
+
+model FeePayment {
+  id            String        @id @default(cuid())
+  studentId     String
+  student       Student       @relation(fields: [studentId], references: [id])
+  amount        Float
+  feeType       String
+  paymentMethod PaymentMethod
+  transactionId String?
+  status        PaymentStatus @default(PENDING)
+  dueDate       DateTime
+  paidDate      DateTime?
+  receiptUrl    String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("fee_payments")
+}
+
+model LibraryBook {
+  id          String   @id @default(cuid())
+  title       String
+  author      String
+  isbn        String?  @unique
+  category    String
+  description String?
+  totalCopies Int      @default(1)
+  availableCopies Int  @default(1)
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  issues      LibraryIssue[]
+
+  @@map("library_books")
+}
+
+model LibraryIssue {
+  id         String    @id @default(cuid())
+  bookId     String
+  book       LibraryBook @relation(fields: [bookId], references: [id])
+  studentId  String
+  student    Student   @relation(fields: [studentId], references: [id])
+  issueDate  DateTime  @default(now())
+  dueDate    DateTime
+  returnDate DateTime?
+  status     IssueStatus @default(ISSUED)
+  fine       Float?    @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@map("library_issues")
+}
+
+model Assignment {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  subject      String
+  class        String
+  dueDate      DateTime
+  maxMarks     Int?
+  instructions String?
+  attachments  String   // JSON string of attachments array
+  teacherId    String
+  teacher      Teacher  @relation(fields: [teacherId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  submissions  AssignmentSubmission[]
+
+  @@map("assignments")
+}
+
+model AssignmentSubmission {
+  id           String     @id @default(cuid())
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  content      String?
+  attachments  String     // JSON string of attachments array
+  submittedAt  DateTime   @default(now())
+  grade        Int?
+  feedback     String?
+  status       SubmissionStatus @default(SUBMITTED)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([assignmentId, userId])
+  @@map("assignment_submissions")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  teacherId String?
+  teacher   Teacher? @relation(fields: [teacherId], references: [id])
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notifications")
+}
+
+// Enums
+enum UserRole {
+  STUDENT
+  TEACHER
+  ADMIN
+  PARENT
+}
+
+enum EventType {
+  RELIGIOUS
+  ACADEMIC
+  CULTURAL
+  SPORTS
+  ANNOUNCEMENT
+}
+
+enum MediaType {
+  AUDIO
+  VIDEO
+  IMAGE
+  DOCUMENT
+  PDF
+}
+
+enum DonationType {
+  SADAQAH
+  KHUMS
+  ZAKAT
+  STUDENT_SPONSORSHIP
+  GENERAL
+  BUILDING_FUND
+}
+
+enum PaymentMethod {
+  UPI
+  CARD
+  BANK_TRANSFER
+  CASH
+  RAZORPAY
+  CASHFREE
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum FeeStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+}
+
+enum IssueStatus {
+  ISSUED
+  RETURNED
+  OVERDUE
+  LOST
+}
+
+enum NotificationType {
+  ANNOUNCEMENT
+  ASSIGNMENT
+  EXAM
+  FEE_REMINDER
+  EVENT
+  GENERAL
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  GRADED
+  LATE
+  PENDING
+}

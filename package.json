@@ -1,0 +1,46 @@
+{
+  "name": "islamic",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "build:force": "SKIP_ENV_VALIDATION=true next build",
+    "build:netlify": "npm run build && npm run export",
+    "export": "next export",
+    "start": "next start",
+    "lint": "next lint",
+    "deploy": "npm run build:netlify"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.9.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.9",
+    "bcryptjs": "^3.0.2",
+    "clsx": "^2.1.0",
+    "formik": "^2.4.6",
+    "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.514.0",
+    "next": "15.3.3",
+    "next-auth": "^4.24.11",
+    "prisma": "^6.9.0",
+    "razorpay": "^2.9.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hot-toast": "^2.5.2",
+    "tailwind-merge": "^2.2.1",
+    "yup": "^1.4.0",
+    "zod": "^3.25.57"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.3",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
