@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import CMSLayout from '@/components/admin/CMSLayout';
 import { 
   Save, 
   Eye, 
@@ -204,8 +203,6 @@ export default function CreateDonationCampaign() {
     }
   };
 
-
-
   const handlePaymentMethodChange = (method: string, checked: boolean) => {
     setFormData(prev => ({
       ...prev,
@@ -239,409 +236,265 @@ export default function CreateDonationCampaign() {
     { label: 'Create Campaign' }
   ];
 
-  const actions = (
-    <div className="flex items-center space-x-3">
-      <button
-        onClick={() => router.back()}
-        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span>Back</span>
-      </button>
-      <button
-        onClick={(e) => handleSubmit(e, false)}
-        disabled={isLoading}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors disabled:opacity-50"
-      >
-        <Save className="h-4 w-4" />
-        <span>Save Draft</span>
-      </button>
-      <button
-        onClick={(e) => handleSubmit(e, true)}
-        disabled={isLoading}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors disabled:opacity-50"
-      >
-        <Eye className="h-4 w-4" />
-        <span>Publish</span>
-      </button>
-    </div>
-  );
-
   return (
-    <CMSLayout
-      title="Create Donation Campaign"
-      description="Launch a new fundraising campaign for your Islamic community"
-      breadcrumbs={breadcrumbs}
-      actions={actions}
-    >
+    <div className="p-1">
+        <header className="bg-surface p-6 rounded-lg shadow-card mb-8">
+            <div className="flex justify-between items-center">
+                <div>
+                    <div className="flex items-center text-sm text-text-muted mb-2">
+                        {breadcrumbs.map((crumb, index) => (
+                            <span key={index} className="flex items-center">
+                                {index > 0 && <span className="mx-2">/</span>}
+                                {crumb.href ? (
+                                    <span className="cursor-pointer hover:text-foreground" onClick={() => router.push(crumb.href!)}>{crumb.label}</span>
+                                ) : (
+                                    <span>{crumb.label}</span>
+                                )}
+                            </span>
+                        ))}
+                    </div>
+                    <h1 className="text-3xl font-bold text-foreground">Create Donation Campaign</h1>
+                    <p className="text-text-secondary mt-1">Launch a new fundraising initiative for the community</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button onClick={() => router.back()} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border text-text-secondary hover:bg-background">
+                        <ArrowLeft className="h-4 w-4" />
+                        Back
+                    </button>
+                    <button onClick={(e) => handleSubmit(e, true)} disabled={isLoading} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                        <Save className="h-4 w-4" />
+                        {isLoading ? 'Publishing...' : 'Publish'}
+                    </button>
+                </div>
+            </div>
+        </header>
+
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
-        {/* Campaign Type Selection */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Campaign Type</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {campaignTypes.map((type) => {
-              const Icon = type.icon;
-              return (
-                <button
-                  key={type.value}
-                  type="button"
-                  onClick={() => handleInputChange('type', type.value)}
-                  className={`p-4 rounded-lg border-2 transition-all text-left ${
-                    formData.type === type.value
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <Icon className={`h-6 w-6 mb-2 ${
-                    formData.type === type.value ? 'text-green-600' : 'text-gray-600'
-                  }`} />
-                  <h4 className="font-medium text-gray-900">{type.label}</h4>
-                  <p className="text-sm text-gray-600 mt-1">{type.description}</p>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Basic Information */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Campaign Details</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Campaign Title *
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.title ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Enter campaign title"
-              />
-              {errors.title && (
-                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-              )}
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                rows={4}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.description ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Describe the purpose and goals of this campaign..."
-              />
-              {errors.description && (
-                <p className="text-red-500 text-sm mt-1">{errors.description}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category *
-              </label>
-              <select
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.category ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value="">Select a category</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+            <h2 className="text-xl font-bold text-foreground mb-6">Campaign Type</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {campaignTypes.map(({ value, label, icon: Icon, description }) => (
+                    <div
+                        key={value}
+                        onClick={() => handleInputChange('type', value)}
+                        className={`p-6 border-2 rounded-lg cursor-pointer transition-all ${
+                            formData.type === value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                        }`}
+                    >
+                        <Icon className={`h-8 w-8 mb-3 ${formData.type === value ? 'text-primary' : 'text-text-secondary'}`} />
+                        <h3 className="font-semibold text-foreground">{label}</h3>
+                        <p className="text-xs text-text-muted mt-1">{description}</p>
+                    </div>
                 ))}
-              </select>
-              {errors.category && (
-                <p className="text-red-500 text-sm mt-1">{errors.category}</p>
-              )}
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Organizer *
-              </label>
-              <input
-                type="text"
-                value={formData.organizer}
-                onChange={(e) => handleInputChange('organizer', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.organizer ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Organization or person organizing this campaign"
-              />
-              {errors.organizer && (
-                <p className="text-red-500 text-sm mt-1">{errors.organizer}</p>
-              )}
-            </div>
-          </div>
         </div>
 
-        {/* Financial Details */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Financial Details</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Goal Amount *
-              </label>
-              <input
-                type="number"
-                value={formData.goalAmount}
-                onChange={(e) => handleInputChange('goalAmount', Number(e.target.value))}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.goalAmount ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="50000"
-                min="1"
-              />
-              {errors.goalAmount && (
-                <p className="text-red-500 text-sm mt-1">{errors.goalAmount}</p>
-              )}
-            </div>
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+            <h2 className="text-xl font-bold text-foreground mb-6">Campaign Details</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-text-secondary mb-2">Title *</label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => handleInputChange('title', e.target.value)}
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                    placeholder="e.g., Annual Ramadan Food Drive"
+                  />
+                  {errors.title && <p className="text-sm text-destructive mt-1">{errors.title}</p>}
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Currency
-              </label>
-              <select
-                value={formData.currency}
-                onChange={(e) => handleInputChange('currency', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-                <option value="USD">USD - US Dollar</option>
-                <option value="EUR">EUR - Euro</option>
-                <option value="GBP">GBP - British Pound</option>
-                <option value="CAD">CAD - Canadian Dollar</option>
-                <option value="AUD">AUD - Australian Dollar</option>
-              </select>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-text-secondary mb-2">Description *</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                    placeholder="Provide a detailed description of the campaign's purpose and goals."
+                  />
+                  {errors.description && <p className="text-sm text-destructive mt-1">{errors.description}</p>}
+                </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Featured Image URL
-              </label>
-              <input
-                type="url"
-                value={formData.featuredImage}
-                onChange={(e) => handleInputChange('featuredImage', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
-          </div>
         </div>
 
-        {/* Campaign Duration */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Campaign Duration</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+            <h2 className="text-xl font-bold text-foreground mb-6">Financials</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-2">Goal Amount *</label>
+                    <input
+                        type="number"
+                        value={formData.goalAmount}
+                        onChange={(e) => handleInputChange('goalAmount', e.target.value ? Number(e.target.value) : '')}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                        placeholder="e.g., 50000"
+                    />
+                    {errors.goalAmount && <p className="text-sm text-destructive mt-1">{errors.goalAmount}</p>}
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-2">Currency</label>
+                    <select
+                        value={formData.currency}
+                        onChange={(e) => handleInputChange('currency', e.target.value)}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                    >
+                        <option>USD</option>
+                        <option>EUR</option>
+                        <option>GBP</option>
+                        <option>INR</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+          <h2 className="text-xl font-bold text-foreground mb-6">Timeline & Contact</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Start Date *
-              </label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Start Date *</label>
               <input
                 type="date"
                 value={formData.startDate}
                 onChange={(e) => handleInputChange('startDate', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.startDate ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
               />
-              {errors.startDate && (
-                <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>
-              )}
+              {errors.startDate && <p className="text-sm text-destructive mt-1">{errors.startDate}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                End Date (Optional)
-              </label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">End Date</label>
               <input
                 type="date"
                 value={formData.endDate}
                 onChange={(e) => handleInputChange('endDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
               />
             </div>
-          </div>
-        </div>
 
-        {/* Contact Information */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Contact Email
-              </label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Organizer *</label>
+              <input
+                type="text"
+                value={formData.organizer}
+                onChange={(e) => handleInputChange('organizer', e.target.value)}
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                placeholder="e.g., Islamic Center of City"
+              />
+              {errors.organizer && <p className="text-sm text-destructive mt-1">{errors.organizer}</p>}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Contact Email</label>
               <input
                 type="email"
                 value={formData.contactEmail}
                 onChange={(e) => handleInputChange('contactEmail', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.contactEmail ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="contact@islamiccenter.org"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                placeholder="e.g., donations@islamiccenter.org"
               />
-              {errors.contactEmail && (
-                <p className="text-red-500 text-sm mt-1">{errors.contactEmail}</p>
-              )}
+              {errors.contactEmail && <p className="text-sm text-destructive mt-1">{errors.contactEmail}</p>}
             </div>
+          </div>
+        </div>
 
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+          <h2 className="text-xl font-bold text-foreground mb-6">Settings & Categorization</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Contact Phone
-              </label>
-              <input
-                type="tel"
-                value={formData.contactPhone}
-                onChange={(e) => handleInputChange('contactPhone', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="+1-555-0123"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Payment Methods */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Methods</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {paymentMethodOptions.map((method) => (
-              <div key={method.value} className="flex items-center">
-                <input
-                  type="checkbox"
-                  id={method.value}
-                  checked={formData.paymentMethods.includes(method.value)}
-                  onChange={(e) => handlePaymentMethodChange(method.value, e.target.checked)}
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                />
-                <label htmlFor={method.value} className="ml-2 block text-sm text-gray-900">
-                  {method.label}
-                </label>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Tags */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
-          
-          <div className="flex flex-wrap gap-2 mb-4">
-            {formData.tags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800"
+              <label className="block text-sm font-medium text-text-secondary mb-2">Category *</label>
+              <select
+                value={formData.category}
+                onChange={(e) => handleInputChange('category', e.target.value)}
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
               >
-                {tag}
-                <button
-                  type="button"
-                  onClick={() => removeTag(tag)}
-                  className="ml-2 text-green-600 hover:text-green-800"
-                >
-                  <X className="h-3 w-3" />
+                <option value="">Select a category</option>
+                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
+              {errors.category && <p className="text-sm text-destructive mt-1">{errors.category}</p>}
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">Tags</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                  placeholder="Add a tag and press Enter"
+                />
+                <button type="button" onClick={addTag} className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Plus className="h-5 w-5" />
                 </button>
-              </span>
-            ))}
-          </div>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.tags.map(tag => (
+                  <div key={tag} className="flex items-center gap-2 bg-background border border-border rounded-full px-3 py-1 text-sm">
+                    {tag}
+                    <button type="button" onClick={() => removeTag(tag)}>
+                      <X className="h-4 w-4 text-text-muted hover:text-destructive" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-          <div className="flex space-x-2">
-            <input
-              type="text"
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="Add a tag"
-            />
+            <div className="md:col-span-2 flex items-center gap-8">
+                <div className="flex items-center gap-3">
+                    <input
+                        type="checkbox"
+                        id="isPublished"
+                        checked={formData.isPublished}
+                        onChange={(e) => handleInputChange('isPublished', e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="isPublished" className="text-sm font-medium text-text-secondary">Publish on site</label>
+                </div>
+                <div className="flex items-center gap-3">
+                    <input
+                        type="checkbox"
+                        id="isFeatured"
+                        checked={formData.isFeatured}
+                        onChange={(e) => handleInputChange('isFeatured', e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="isFeatured" className="text-sm font-medium text-text-secondary">Mark as featured</label>
+                </div>
+                <div className="flex items-center gap-3">
+                    <input
+                        type="checkbox"
+                        id="isUrgent"
+                        checked={formData.isUrgent}
+                        onChange={(e) => handleInputChange('isUrgent', e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="isUrgent" className="text-sm font-medium text-text-secondary">Mark as urgent</label>
+                </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-4 mt-8">
             <button
-              type="button"
-              onClick={addTag}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                type="button"
+                onClick={(e) => handleSubmit(e, false)}
+                disabled={isLoading}
+                className="px-6 py-2 border border-border rounded-md text-text-secondary hover:bg-background"
             >
-              <Plus className="h-4 w-4" />
-              <span>Add</span>
+                Save as Draft
             </button>
-          </div>
-        </div>
-
-        {/* Additional Information */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Information</h3>
-          
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Additional Details
-              </label>
-              <textarea
-                value={formData.additionalInfo}
-                onChange={(e) => handleInputChange('additionalInfo', e.target.value)}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Any additional information about the campaign, tax deductibility, etc."
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Settings */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Campaign Settings</h3>
-          
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isUrgent"
-                checked={formData.isUrgent}
-                onChange={(e) => handleInputChange('isUrgent', e.target.checked)}
-                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-              />
-              <label htmlFor="isUrgent" className="ml-2 block text-sm text-gray-900">
-                Mark as Urgent Campaign
-              </label>
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isFeatured"
-                checked={formData.isFeatured}
-                onChange={(e) => handleInputChange('isFeatured', e.target.checked)}
-                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-              />
-              <label htmlFor="isFeatured" className="ml-2 block text-sm text-gray-900">
-                Featured Campaign
-              </label>
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={formData.isActive}
-                onChange={(e) => handleInputChange('isActive', e.target.checked)}
-                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-              />
-              <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
-                Active Campaign (accepting donations)
-              </label>
-            </div>
-          </div>
+            <button
+                type="submit"
+                onClick={(e) => handleSubmit(e, true)}
+                disabled={isLoading}
+                className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+                {isLoading ? 'Publishing...' : 'Publish Campaign'}
+            </button>
         </div>
       </form>
-    </CMSLayout>
+    </div>
   );
 }

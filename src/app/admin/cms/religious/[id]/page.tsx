@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import CMSLayout from '@/components/admin/CMSLayout';
 import { 
   Edit, 
   ArrowLeft,
@@ -154,195 +153,157 @@ export default function ViewReligiousContent() {
     { label: content?.title || 'View Content' }
   ];
 
-  const actions = content ? (
-    <div className="flex items-center space-x-3">
-      <button
-        onClick={() => router.back()}
-        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span>Back</span>
-      </button>
-      <button
-        onClick={() => router.push(`/admin/cms/religious/${id}/edit`)}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <Edit className="h-4 w-4" />
-        <span>Edit</span>
-      </button>
-      <button
-        onClick={handleDelete}
-        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <Trash2 className="h-4 w-4" />
-        <span>Delete</span>
-      </button>
-    </div>
-  ) : null;
-
   if (isLoading) {
     return (
-      <CMSLayout
-        title="View Religious Content"
-        description="Loading content..."
-        breadcrumbs={breadcrumbs}
-      >
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
         </div>
-      </CMSLayout>
     );
   }
 
   if (!content) {
     return (
-      <CMSLayout
-        title="Content Not Found"
-        description="The requested content could not be found"
-        breadcrumbs={breadcrumbs}
-      >
-        <div className="text-center py-12">
-          <p className="text-gray-600">Content not found</p>
+        <div className="p-1">
+            <header className="bg-surface p-6 rounded-lg shadow-card mb-8">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <div className="flex items-center text-sm text-text-muted mb-2">
+                            {breadcrumbs.map((crumb, index) => (
+                                <span key={index} className="flex items-center">
+                                    {index > 0 && <span className="mx-2">/</span>}
+                                    {crumb.href ? (
+                                        <span className="cursor-pointer hover:text-foreground" onClick={() => router.push(crumb.href!)}>{crumb.label}</span>
+                                    ) : (
+                                        <span>{crumb.label}</span>
+                                    )}
+                                </span>
+                            ))}
+                        </div>
+                        <h1 className="text-3xl font-bold text-foreground">Content Not Found</h1>
+                        <p className="text-text-secondary mt-1">The requested content could not be found or no longer exists.</p>
+                    </div>
+                </div>
+            </header>
         </div>
-      </CMSLayout>
     );
   }
 
   return (
-    <CMSLayout
-      title="View Religious Content"
-      description="Review and manage Islamic content"
-      breadcrumbs={breadcrumbs}
-      actions={actions}
-    >
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center space-x-3 mb-4">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(content.type)}`}>
-                  {getTypeIcon(content.type)}
-                  <span className="ml-2 capitalize">{content.type}</span>
-                </span>
-                {content.isFeatured && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                    <Star className="h-4 w-4 mr-1" />
-                    Featured
-                  </span>
+    <div className="p-1">
+        <header className="bg-surface p-6 rounded-lg shadow-card mb-8">
+            <div className="flex justify-between items-center">
+                <div>
+                    <div className="flex items-center text-sm text-text-muted mb-2">
+                        {breadcrumbs.map((crumb, index) => (
+                            <span key={index} className="flex items-center">
+                                {index > 0 && <span className="mx-2">/</span>}
+                                {crumb.href ? (
+                                    <span className="cursor-pointer hover:text-foreground" onClick={() => router.push(crumb.href!)}>{crumb.label}</span>
+                                ) : (
+                                    <span>{crumb.label}</span>
+                                )}
+                            </span>
+                        ))}
+                    </div>
+                    <h1 className="text-3xl font-bold text-foreground">{content.title}</h1>
+                    <p className="text-text-secondary mt-1">Review and manage Islamic content</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button onClick={() => router.back()} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border text-text-secondary hover:bg-background">
+                        <ArrowLeft className="h-4 w-4" />
+                        Back
+                    </button>
+                    <button onClick={() => router.push(`/admin/cms/religious/${id}/edit`)} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-info text-info hover:bg-info/10">
+                        <Edit className="h-4 w-4" />
+                        Edit
+                    </button>
+                    <button onClick={handleDelete} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+            <div className="bg-surface rounded-lg shadow-card p-8">
+                <div className="flex items-center space-x-4 mb-6">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(content.type)}`}>
+                        {getTypeIcon(content.type)}
+                        <span className="ml-2 capitalize">{content.type}</span>
+                    </span>
+                    {content.isFeatured && (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                        <Star className="h-4 w-4 mr-1" />
+                        Featured
+                    </span>
+                    )}
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                    content.isPublished 
+                        ? 'bg-success/20 text-success' 
+                        : 'bg-gray-200 text-gray-700'
+                    }`}>
+                    {content.isPublished ? 'Published' : 'Draft'}
+                    </span>
+                </div>
+                {content.featuredImage && (
+                    <div className="mb-6 rounded-lg overflow-hidden">
+                        <img src={content.featuredImage} alt={content.title} className="w-full h-auto object-cover" />
+                    </div>
                 )}
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  content.isPublished 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-gray-100 text-gray-800'
-                }`}>
-                  {content.isPublished ? 'Published' : 'Draft'}
-                </span>
-              </div>
-              
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{content.title}</h1>
-              
-              {content.excerpt && (
-                <p className="text-lg text-gray-600 mb-4">{content.excerpt}</p>
-              )}
-
-              <div className="flex items-center space-x-6 text-sm text-gray-500">
-                <div className="flex items-center space-x-1">
-                  <User className="h-4 w-4" />
-                  <span>{content.author}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>{formatDate(content.publishedAt || content.createdAt)}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Eye className="h-4 w-4" />
-                  <span>{content.views} views</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Star className="h-4 w-4" />
-                  <span>{content.likes} likes</span>
-                </div>
-              </div>
+                {content.excerpt && <p className="text-lg text-text-secondary mb-6 italic">{content.excerpt}</p>}
+                
+                {content.arabicText && (
+                    <div className="mb-6 text-right font-arabic text-2xl" dir="rtl">
+                        {content.arabicText}
+                    </div>
+                )}
+                {content.translation && (
+                    <div className="mb-6 pl-4 border-l-4 border-border">
+                        <p className="text-text-secondary italic">{content.translation}</p>
+                    </div>
+                )}
+                <div className="prose prose-lg max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: content.content }} />
             </div>
-          </div>
         </div>
 
-        {/* Content */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Content</h2>
-          
-          {content.arabicText && (
-            <div className="mb-6 p-4 bg-green-50 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Arabic Text</h3>
-              <p className="text-xl text-gray-800 leading-relaxed" dir="rtl">
-                {content.arabicText}
-              </p>
+        <div className="lg:col-span-1 space-y-8">
+            <div className="bg-surface rounded-lg shadow-card p-6">
+                <h3 className="text-lg font-bold text-foreground mb-4">Details</h3>
+                <ul className="space-y-3 text-sm">
+                    <li className="flex justify-between">
+                        <span className="text-text-muted flex items-center"><User className="h-4 w-4 mr-2" />Author</span>
+                        <span className="font-medium text-foreground">{content.author}</span>
+                    </li>
+                    <li className="flex justify-between">
+                        <span className="text-text-muted flex items-center"><BookOpen className="h-4 w-4 mr-2" />Category</span>
+                        <span className="font-medium text-foreground">{content.category}</span>
+                    </li>
+                    <li className="flex justify-between">
+                        <span className="text-text-muted flex items-center"><Calendar className="h-4 w-4 mr-2" />Published</span>
+                        <span className="font-medium text-foreground">{content.publishedAt ? formatDate(content.publishedAt) : 'Not published'}</span>
+                    </li>
+                    <li className="flex justify-between">
+                        <span className="text-text-muted flex items-center"><Eye className="h-4 w-4 mr-2" />Views</span>
+                        <span className="font-medium text-foreground">{content.views.toLocaleString()}</span>
+                    </li>
+                    <li className="flex justify-between">
+                        <span className="text-text-muted flex items-center"><Heart className="h-4 w-4 mr-2" />Likes</span>
+                        <span className="font-medium text-foreground">{content.likes.toLocaleString()}</span>
+                    </li>
+                </ul>
             </div>
-          )}
-
-          {content.translation && (
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Translation</h3>
-              <p className="text-gray-800 leading-relaxed">
-                {content.translation}
-              </p>
+            <div className="bg-surface rounded-lg shadow-card p-6">
+                <h3 className="text-lg font-bold text-foreground mb-4">Tags</h3>
+                <div className="flex flex-wrap gap-2">
+                    {content.tags.map(tag => (
+                        <span key={tag} className="px-3 py-1 bg-background rounded-full text-sm text-text-secondary">{tag}</span>
+                    ))}
+                </div>
             </div>
-          )}
-
-          <div className="prose max-w-none">
-            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-              {content.content}
-            </div>
-          </div>
-
-          {content.reference && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Reference</h3>
-              <p className="text-gray-800 font-medium">
-                {content.reference}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Metadata */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Metadata</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Category</h3>
-              <p className="text-gray-900">{content.category}</p>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Tags</h3>
-              <div className="flex flex-wrap gap-2">
-                {content.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800"
-                  >
-                    <Tag className="h-3 w-3 mr-1" />
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Created</h3>
-              <p className="text-gray-900">{formatDate(content.createdAt)}</p>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Last Modified</h3>
-              <p className="text-gray-900">{formatDate(content.lastModified)}</p>
-            </div>
-          </div>
         </div>
       </div>
-    </CMSLayout>
+    </div>
   );
 }

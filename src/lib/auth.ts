@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
-import { prisma } from './prisma';
+import { supabase } from './supabase';
 
 export interface AuthUser {
   userId: string;
@@ -75,11 +75,20 @@ export async function requireAuth(
 }
 
 export async function getUserWithProfile(userId: string) {
-  return await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      studentProfile: true,
-      teacherProfile: true,
-    }
-  });
+  const { data: user, error } = await supabase
+    .from('users')
+    .select(`
+      *,
+      students(*),
+      teachers(*)
+    `)
+    .eq('id', userId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching user profile:', error);
+    return null;
+  }
+
+  return user;
 }

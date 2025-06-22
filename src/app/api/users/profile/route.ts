@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAuth, getUserWithProfile } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 
 const updateProfileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
-  dateOfBirth: z.string().optional(),
-  profileImage: z.string().optional(),
+  date_of_birth: z.string().optional(),
+  profile_image: z.string().optional(),
   // Student specific fields
   studentProfile: z.object({
-    fatherName: z.string().optional(),
-    motherName: z.string().optional(),
-    guardianPhone: z.string().optional(),
-    emergencyContact: z.string().optional(),
-    bloodGroup: z.string().optional(),
-    medicalInfo: z.string().optional(),
+    father_name: z.string().optional(),
+    mother_name: z.string().optional(),
+    guardian_phone: z.string().optional(),
+    emergency_contact: z.string().optional(),
+    blood_group: z.string().optional(),
+    medical_info: z.string().optional(),
   }).optional(),
   // Teacher specific fields
   teacherProfile: z.object({
@@ -24,8 +24,8 @@ const updateProfileSchema = z.object({
     subjects: z.array(z.string()).optional(),
     qualification: z.string().optional(),
     experience: z.number().optional(),
-    isClassTeacher: z.boolean().optional(),
-    classAssigned: z.string().optional(),
+    is_class_teacher: z.boolean().optional(),
+    class_assigned: z.string().optional(),
   }).optional(),
 });
 
@@ -72,40 +72,53 @@ export async function PUT(request: NextRequest) {
     const validatedData = updateProfileSchema.parse(body);
 
     // Update main user data
-    const updateData: { name?: string; phone?: string; address?: string; profileImage?: string; dateOfBirth?: Date } = {};
+    const updateData: any = {};
     if (validatedData.name) updateData.name = validatedData.name;
     if (validatedData.phone) updateData.phone = validatedData.phone;
     if (validatedData.address) updateData.address = validatedData.address;
-    if (validatedData.profileImage) updateData.profileImage = validatedData.profileImage;
-    if (validatedData.dateOfBirth) updateData.dateOfBirth = new Date(validatedData.dateOfBirth);
+    if (validatedData.profile_image) updateData.profile_image = validatedData.profile_image;
+    if (validatedData.date_of_birth) updateData.date_of_birth = validatedData.date_of_birth;
 
-    const updatedUser = await prisma.user.update({
-      where: { id: authResult.user.userId },
-      data: updateData,
-      include: {
-        studentProfile: true,
-        teacherProfile: true,
-      },
-    });
+    const { data: updatedUser, error: userError } = await supabase
+      .from('users')
+      .update(updateData)
+      .eq('id', authResult.user.userId)
+      .select('*, students(*), teachers(*)')
+      .single();
 
-    // Update role-specific profile
-    if (validatedData.studentProfile && updatedUser.studentProfile) {
-      await prisma.student.update({
-        where: { userId: authResult.user.userId },
-        data: validatedData.studentProfile,
-      });
+    if (userError) {
+      return NextResponse.json(
+        { error: 'Failed to update user' },
+        { status: 500 }
+      );
     }
 
-    if (validatedData.teacherProfile && updatedUser.teacherProfile) {
-      const teacherData = { ...validatedData.teacherProfile } as { subjects?: string[] | string; [key: string]: unknown };
+    // Update role-specific profile
+    if (validatedData.studentProfile && updatedUser.students) {
+      const { error: studentError } = await supabase
+        .from('students')
+        .update(validatedData.studentProfile)
+        .eq('user_id', authResult.user.userId);
+
+      if (studentError) {
+        console.error('Student profile update error:', studentError);
+      }
+    }
+
+    if (validatedData.teacherProfile && updatedUser.teachers) {
+      const teacherData = { ...validatedData.teacherProfile } as any;
       if (teacherData.subjects) {
         teacherData.subjects = JSON.stringify(teacherData.subjects);
       }
 
-      await prisma.teacher.update({
-        where: { userId: authResult.user.userId },
-        data: teacherData,
-      });
+      const { error: teacherError } = await supabase
+        .from('teachers')
+        .update(teacherData)
+        .eq('user_id', authResult.user.userId);
+
+      if (teacherError) {
+        console.error('Teacher profile update error:', teacherError);
+      }
     }
 
     // Fetch updated user with profiles

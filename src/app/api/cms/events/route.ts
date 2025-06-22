@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { z } from 'zod';
+import { supabase } from '@/lib/supabase';
 
 // Validation schema for events
 const eventSchema = z.object({
@@ -48,194 +49,66 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sortBy') || 'startDate';
     const sortOrder = searchParams.get('sortOrder') || 'asc';
 
-    // Mock data for now - replace with actual database queries
-    const mockEvents = [
-      {
-        id: '1',
-        title: 'Friday Khutba: The Importance of Community',
-        description: 'Join us for this week&apos;s Friday sermon focusing on building strong Islamic communities and supporting one another.',
-        type: 'religious',
-        category: 'Weekly Khutba',
-        startDate: '2024-02-02',
-        endDate: '2024-02-02',
-        startTime: '13:00',
-        endTime: '14:00',
-        location: 'Main Prayer Hall',
-        speaker: 'Imam Abdullah Rahman',
-        organizer: 'Islamic Center',
-        maxAttendees: 500,
-        registrationRequired: false,
-        fee: 0,
-        tags: ['khutba', 'friday', 'community', 'weekly'],
-        isPublished: true,
-        isFeatured: true,
-        featuredImage: '/images/events/friday-khutba.jpg',
-        contactEmail: 'info@islamiccenter.org',
-        contactPhone: '+1-555-0123',
-        currentAttendees: 0,
-        views: 245,
-        createdAt: '2024-01-15T10:00:00Z',
-        lastModified: '2024-01-20T14:30:00Z'
-      },
-      {
-        id: '2',
-        title: 'Quran Study Circle - Surah Al-Baqarah',
-        description: 'Weekly Quran study session focusing on the detailed study of Surah Al-Baqarah with translation and tafsir.',
-        type: 'educational',
-        category: 'Quran Study',
-        startDate: '2024-02-05',
-        endDate: '2024-02-05',
-        startTime: '19:00',
-        endTime: '20:30',
-        location: 'Study Room A',
-        speaker: 'Dr. Fatima Al-Zahra',
-        organizer: 'Education Committee',
-        maxAttendees: 30,
-        registrationRequired: true,
-        registrationDeadline: '2024-02-04T23:59:59Z',
-        fee: 0,
-        tags: ['quran', 'study', 'tafsir', 'weekly'],
-        isPublished: true,
-        isFeatured: false,
-        featuredImage: '/images/events/quran-study.jpg',
-        contactEmail: 'education@islamiccenter.org',
-        currentAttendees: 18,
-        views: 89,
-        createdAt: '2024-01-12T09:00:00Z',
-        lastModified: '2024-01-18T16:45:00Z'
-      },
-      {
-        id: '3',
-        title: 'Islamic Finance Workshop',
-        description: 'Learn about Islamic banking principles, halal investments, and Sharia-compliant financial planning.',
-        type: 'workshop',
-        category: 'Finance',
-        startDate: '2024-02-10',
-        endDate: '2024-02-10',
-        startTime: '10:00',
-        endTime: '16:00',
-        location: 'Conference Hall',
-        speaker: 'Dr. Ahmed Hassan',
-        organizer: 'Community Outreach',
-        maxAttendees: 100,
-        registrationRequired: true,
-        registrationDeadline: '2024-02-08T23:59:59Z',
-        fee: 25,
-        tags: ['finance', 'workshop', 'halal', 'investment'],
-        isPublished: true,
-        isFeatured: true,
-        featuredImage: '/images/events/islamic-finance.jpg',
-        contactEmail: 'workshops@islamiccenter.org',
-        contactPhone: '+1-555-0124',
-        currentAttendees: 67,
-        views: 156,
-        createdAt: '2024-01-08T11:30:00Z',
-        lastModified: '2024-01-25T10:15:00Z'
-      },
-      {
-        id: '4',
-        title: 'Youth Islamic Conference 2024',
-        description: 'Annual conference for Muslim youth featuring inspiring speakers, workshops, and networking opportunities.',
-        type: 'conference',
-        category: 'Youth',
-        startDate: '2024-03-15',
-        endDate: '2024-03-17',
-        startTime: '09:00',
-        endTime: '18:00',
-        location: 'Community Center',
-        speaker: 'Multiple Speakers',
-        organizer: 'Youth Committee',
-        maxAttendees: 300,
-        registrationRequired: true,
-        registrationDeadline: '2024-03-10T23:59:59Z',
-        fee: 50,
-        tags: ['youth', 'conference', 'annual', 'networking'],
-        isPublished: false,
-        isFeatured: false,
-        featuredImage: '/images/events/youth-conference.jpg',
-        contactEmail: 'youth@islamiccenter.org',
-        contactPhone: '+1-555-0125',
-        additionalInfo: 'Includes meals and conference materials',
-        currentAttendees: 0,
-        views: 45,
-        createdAt: '2024-01-05T14:20:00Z',
-        lastModified: '2024-01-22T09:30:00Z'
-      }
-    ];
+    const from = (page - 1) * limit;
+    const to = page * limit - 1;
 
-    // Apply filters
-    let filteredEvents = mockEvents;
+    let query = supabase.from('events').select('*', { count: 'exact' });
 
     if (search) {
-      filteredEvents = filteredEvents.filter(event =>
-        event.title.toLowerCase().includes(search.toLowerCase()) ||
-        event.description.toLowerCase().includes(search.toLowerCase()) ||
-        event.speaker?.toLowerCase().includes(search.toLowerCase())
-      );
+      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,speaker.ilike.%${search}%`);
     }
 
     if (type) {
-      filteredEvents = filteredEvents.filter(event => event.type === type);
+      query = query.eq('type', type);
     }
-
+    
     if (category) {
-      filteredEvents = filteredEvents.filter(event => event.category === category);
+        query = query.eq('category', category);
     }
 
     if (status) {
-      if (status === 'published') {
-        filteredEvents = filteredEvents.filter(event => event.isPublished);
-      } else if (status === 'draft') {
-        filteredEvents = filteredEvents.filter(event => !event.isPublished);
-      } else if (status === 'upcoming') {
-        const now = new Date();
-        filteredEvents = filteredEvents.filter(event => new Date(event.startDate) > now);
-      } else if (status === 'past') {
-        const now = new Date();
-        filteredEvents = filteredEvents.filter(event => new Date(event.startDate) < now);
-      }
+        const now = new Date().toISOString();
+        if (status === 'published') query = query.eq('is_published', true);
+        if (status === 'draft') query = query.eq('is_published', false);
+        if (status === 'upcoming') query = query.gte('start_date', now);
+        if (status === 'past') query = query.lt('start_date', now);
     }
 
-    // Apply sorting
-    filteredEvents.sort((a, b) => {
-      const aValue = a[sortBy as keyof typeof a];
-      const bValue = b[sortBy as keyof typeof b];
+    query = query.order(sortBy === 'startDate' ? 'start_date' : sortBy, { ascending: sortOrder === 'asc' });
+    query = query.range(from, to);
 
-      // Handle undefined values
-      if (aValue === undefined && bValue === undefined) return 0;
-      if (aValue === undefined) return 1;
-      if (bValue === undefined) return -1;
+    const { data: events, error, count } = await query;
 
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
-
-    // Apply pagination
-    const totalCount = filteredEvents.length;
-    const totalPages = Math.ceil(totalCount / limit);
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedEvents = filteredEvents.slice(startIndex, endIndex);
-
+    if (error) {
+        console.error('Error fetching events:', error);
+        return NextResponse.json({ success: false, error: 'Failed to fetch events' }, { status: 500 });
+    }
+    
     // Calculate statistics
+    const { data: allEvents, error: allEventsError } = await supabase.from('events').select('start_date, is_published, is_featured, current_attendees, views');
+    
+    if(allEventsError) {
+        console.error('Error fetching all events for stats:', allEventsError);
+    }
+    
     const now = new Date();
     const stats = {
-      totalEvents: mockEvents.length,
-      upcomingEvents: mockEvents.filter(event => new Date(event.startDate) > now).length,
-      pastEvents: mockEvents.filter(event => new Date(event.startDate) < now).length,
-      publishedEvents: mockEvents.filter(event => event.isPublished).length,
-      draftEvents: mockEvents.filter(event => !event.isPublished).length,
-      featuredEvents: mockEvents.filter(event => event.isFeatured).length,
-      totalAttendees: mockEvents.reduce((sum, event) => sum + event.currentAttendees, 0),
-      totalViews: mockEvents.reduce((sum, event) => sum + event.views, 0)
+        totalEvents: allEvents?.length || 0,
+        upcomingEvents: allEvents?.filter(event => new Date(event.start_date) > now).length || 0,
+        pastEvents: allEvents?.filter(event => new Date(event.start_date) < now).length || 0,
+        publishedEvents: allEvents?.filter(event => event.is_published).length || 0,
+        draftEvents: allEvents?.filter(event => !event.is_published).length || 0,
+        featuredEvents: allEvents?.filter(event => event.is_featured).length || 0,
+        totalAttendees: allEvents?.reduce((sum, event) => sum + (event.current_attendees || 0), 0) || 0,
+        totalViews: allEvents?.reduce((sum, event) => sum + (event.views || 0), 0) || 0
     };
+    
+    const totalCount = count || 0;
+    const totalPages = Math.ceil(totalCount / limit);
 
     return NextResponse.json({
       success: true,
-      data: paginatedEvents,
+      data: events,
       stats,
       pagination: {
         page,
@@ -281,15 +154,45 @@ export async function POST(request: NextRequest) {
 
     const validatedData = validationResult.data;
 
-    // Here you would create in the database
-    const newEvent = {
-      id: Date.now().toString(),
-      ...validatedData,
-      currentAttendees: 0,
-      views: 0,
-      createdAt: new Date().toISOString(),
-      lastModified: new Date().toISOString()
-    };
+    // Insert into database
+    const { data: newEvent, error } = await supabase
+      .from('events')
+      .insert({
+        title: validatedData.title,
+        description: validatedData.description,
+        event_type: validatedData.type.toUpperCase(),
+        start_date: validatedData.startDate,
+        end_date: validatedData.endDate,
+        location: validatedData.location,
+        category: validatedData.category,
+        speaker: validatedData.speaker,
+        organizer: validatedData.organizer,
+        max_attendees: validatedData.maxAttendees,
+        registration_required: validatedData.registrationRequired,
+        registration_deadline: validatedData.registrationDeadline,
+        fee: validatedData.fee,
+        tags: JSON.stringify(validatedData.tags || []),
+        is_published: validatedData.isPublished,
+        is_featured: validatedData.isFeatured,
+        featured_image: validatedData.featuredImage,
+        contact_email: validatedData.contactEmail,
+        contact_phone: validatedData.contactPhone,
+        additional_info: validatedData.additionalInfo,
+        current_attendees: 0,
+        views: 0,
+        is_public: true,
+        created_by: authResult.user.userId
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Database error:', error);
+      return NextResponse.json(
+        { success: false, error: 'Failed to create event' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,

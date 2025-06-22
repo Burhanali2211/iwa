@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import CMSLayout from '@/components/admin/CMSLayout';
 import { 
   Save, 
   Eye, 
@@ -218,311 +217,255 @@ export default function EditReligiousContent() {
     { label: 'Edit Content' }
   ];
 
-  const actions = (
-    <div className="flex items-center space-x-3">
-      <button
-        onClick={() => router.back()}
-        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span>Back</span>
-      </button>
-      <button
-        onClick={(e) => handleSubmit(e, false)}
-        disabled={isLoading}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors disabled:opacity-50"
-      >
-        <Save className="h-4 w-4" />
-        <span>Save Changes</span>
-      </button>
-      <button
-        onClick={(e) => handleSubmit(e, true)}
-        disabled={isLoading}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors disabled:opacity-50"
-      >
-        <Eye className="h-4 w-4" />
-        <span>Publish</span>
-      </button>
-    </div>
-  );
-
   if (isLoadingData) {
     return (
-      <CMSLayout
-        title="Edit Religious Content"
-        description="Loading content..."
-        breadcrumbs={breadcrumbs}
-      >
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
         </div>
-      </CMSLayout>
     );
   }
 
   return (
-    <CMSLayout
-      title="Edit Religious Content"
-      description="Update Islamic content on your website"
-      breadcrumbs={breadcrumbs}
-      actions={actions}
-    >
+    <div className="p-1">
+        <header className="bg-surface p-6 rounded-lg shadow-card mb-8">
+            <div className="flex justify-between items-center">
+                <div>
+                    <div className="flex items-center text-sm text-text-muted mb-2">
+                        {breadcrumbs.map((crumb, index) => (
+                            <span key={index} className="flex items-center">
+                                {index > 0 && <span className="mx-2">/</span>}
+                                {crumb.href ? (
+                                    <span className="cursor-pointer hover:text-foreground" onClick={() => router.push(crumb.href!)}>{crumb.label}</span>
+                                ) : (
+                                    <span>{crumb.label}</span>
+                                )}
+                            </span>
+                        ))}
+                    </div>
+                    <h1 className="text-3xl font-bold text-foreground">Edit Religious Content</h1>
+                    <p className="text-text-secondary mt-1">Modify and update existing Islamic content</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button onClick={() => router.back()} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border text-text-secondary hover:bg-background">
+                        <ArrowLeft className="h-4 w-4" />
+                        Back
+                    </button>
+                    <button onClick={(e) => handleSubmit(e, true)} disabled={isLoading} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                        <Save className="h-4 w-4" />
+                        {isLoading ? 'Publishing...' : 'Publish'}
+                    </button>
+                </div>
+            </div>
+        </header>
+
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
-        {/* Content Type Selection */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Content Type</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {contentTypes.map((type) => {
-              const Icon = type.icon;
-              return (
-                <button
-                  key={type.value}
-                  type="button"
-                  onClick={() => handleInputChange('type', type.value)}
-                  className={`p-4 rounded-lg border-2 transition-all text-left ${
-                    formData.type === type.value
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <Icon className={`h-6 w-6 mb-2 ${
-                    formData.type === type.value ? 'text-green-600' : 'text-gray-600'
-                  }`} />
-                  <h4 className="font-medium text-gray-900">{type.label}</h4>
-                  <p className="text-sm text-gray-600 mt-1">{type.description}</p>
-                </button>
-              );
-            })}
-          </div>
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+            <h2 className="text-xl font-bold text-foreground mb-6">Content Type</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {contentTypes.map(({ value, label, icon: Icon, description }) => (
+                    <div
+                        key={value}
+                        onClick={() => handleInputChange('type', value)}
+                        className={`p-6 border-2 rounded-lg cursor-pointer transition-all ${
+                            formData.type === value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                        }`}
+                    >
+                        <Icon className={`h-8 w-8 mb-3 ${formData.type === value ? 'text-primary' : 'text-text-secondary'}`} />
+                        <h3 className="font-semibold text-foreground">{label}</h3>
+                        <p className="text-xs text-text-muted mt-1">{description}</p>
+                    </div>
+                ))}
+            </div>
         </div>
 
-        {/* Basic Information */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+          <h2 className="text-xl font-bold text-foreground mb-6">Main Content</h2>
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title *
-              </label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Title *</label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.title ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
                 placeholder="Enter content title"
               />
-              {errors.title && (
-                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-              )}
+              {errors.title && <p className="text-sm text-destructive mt-1">{errors.title}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Author *
-              </label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Excerpt</label>
+              <textarea
+                value={formData.excerpt}
+                onChange={(e) => handleInputChange('excerpt', e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                placeholder="A brief summary of the content"
+              />
+              {errors.excerpt && <p className="text-sm text-destructive mt-1">{errors.excerpt}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Main Content (Markdown supported) *</label>
+              <textarea
+                value={formData.content}
+                onChange={(e) => handleInputChange('content', e.target.value)}
+                rows={15}
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary font-mono text-sm"
+                placeholder="Write your main content here..."
+              />
+              {errors.content && <p className="text-sm text-destructive mt-1">{errors.content}</p>}
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+            <h2 className="text-xl font-bold text-foreground mb-6">Additional Content</h2>
+            <div className="space-y-6">
+                <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-2">Arabic Text</label>
+                    <textarea
+                        value={formData.arabicText}
+                        onChange={(e) => handleInputChange('arabicText', e.target.value)}
+                        rows={5}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary font-arabic text-lg"
+                        placeholder="Enter Arabic text if any"
+                        dir="rtl"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-2">Translation</label>
+                    <textarea
+                        value={formData.translation}
+                        onChange={(e) => handleInputChange('translation', e.target.value)}
+                        rows={5}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                        placeholder="Enter translation if any"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-2">Reference</label>
+                    <input
+                        type="text"
+                        value={formData.reference}
+                        onChange={(e) => handleInputChange('reference', e.target.value)}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                        placeholder="e.g., Quran 2:183, Sahih al-Bukhari 5"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+          <h2 className="text-xl font-bold text-foreground mb-6">Categorization & Metadata</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Author *</label>
               <input
                 type="text"
                 value={formData.author}
                 onChange={(e) => handleInputChange('author', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.author ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
                 placeholder="Enter author name"
               />
-              {errors.author && (
-                <p className="text-red-500 text-sm mt-1">{errors.author}</p>
-              )}
+              {errors.author && <p className="text-sm text-destructive mt-1">{errors.author}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category *
-              </label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Category *</label>
               <select
                 value={formData.category}
                 onChange={(e) => handleInputChange('category', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.category ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
               >
                 <option value="">Select a category</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
+                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
-              {errors.category && (
-                <p className="text-red-500 text-sm mt-1">{errors.category}</p>
-              )}
+              {errors.category && <p className="text-sm text-destructive mt-1">{errors.category}</p>}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Reference
-              </label>
-              <input
-                type="text"
-                value={formData.reference}
-                onChange={(e) => handleInputChange('reference', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="e.g., Quran 2:255, Sahih Bukhari"
-              />
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Excerpt
-            </label>
-            <textarea
-              value={formData.excerpt}
-              onChange={(e) => handleInputChange('excerpt', e.target.value)}
-              rows={3}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                errors.excerpt ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Brief description of the content (optional)"
-            />
-            {errors.excerpt && (
-              <p className="text-red-500 text-sm mt-1">{errors.excerpt}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Content</h3>
-          
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Main Content *
-              </label>
-              <textarea
-                value={formData.content}
-                onChange={(e) => handleInputChange('content', e.target.value)}
-                rows={12}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.content ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Enter the main content..."
-              />
-              {errors.content && (
-                <p className="text-red-500 text-sm mt-1">{errors.content}</p>
-              )}
-            </div>
-
-            {(formData.type === 'quran' || formData.type === 'dua') && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Arabic Text
-                  </label>
-                  <textarea
-                    value={formData.arabicText}
-                    onChange={(e) => handleInputChange('arabicText', e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Enter Arabic text..."
-                    dir="rtl"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Translation
-                  </label>
-                  <textarea
-                    value={formData.translation}
-                    onChange={(e) => handleInputChange('translation', e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Enter English translation..."
-                  />
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Tags */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
-          
-          <div className="flex flex-wrap gap-2 mb-4">
-            {formData.tags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800"
-              >
-                {tag}
-                <button
-                  type="button"
-                  onClick={() => removeTag(tag)}
-                  className="ml-2 text-green-600 hover:text-green-800"
-                >
-                  <X className="h-3 w-3" />
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">Tags</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                  placeholder="Add a tag and press Enter"
+                />
+                <button type="button" onClick={addTag} className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Plus className="h-5 w-5" />
                 </button>
-              </span>
-            ))}
-          </div>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.tags.map(tag => (
+                  <div key={tag} className="flex items-center gap-2 bg-background border border-border rounded-full px-3 py-1 text-sm">
+                    {tag}
+                    <button type="button" onClick={() => removeTag(tag)}>
+                      <X className="h-4 w-4 text-text-muted hover:text-destructive" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-          <div className="flex space-x-2">
-            <input
-              type="text"
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="Add a tag"
-            />
-            <button
-              type="button"
-              onClick={addTag}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add</span>
-            </button>
+            <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">Featured Image URL</label>
+                <input
+                    type="text"
+                    value={formData.featuredImage}
+                    onChange={(e) => handleInputChange('featuredImage', e.target.value)}
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                    placeholder="https://example.com/image.jpg"
+                />
+            </div>
+
+            <div className="md:col-span-2 flex items-center gap-8">
+                <div className="flex items-center gap-3">
+                    <input
+                        type="checkbox"
+                        id="isPublished"
+                        checked={formData.isPublished}
+                        onChange={(e) => handleInputChange('isPublished', e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="isPublished" className="text-sm font-medium text-text-secondary">Publish on site</label>
+                </div>
+                <div className="flex items-center gap-3">
+                    <input
+                        type="checkbox"
+                        id="isFeatured"
+                        checked={formData.isFeatured}
+                        onChange={(e) => handleInputChange('isFeatured', e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="isFeatured" className="text-sm font-medium text-text-secondary">Mark as featured</label>
+                </div>
+            </div>
           </div>
         </div>
 
-        {/* Settings */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Settings</h3>
-          
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isFeatured"
-                checked={formData.isFeatured}
-                onChange={(e) => handleInputChange('isFeatured', e.target.checked)}
-                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-              />
-              <label htmlFor="isFeatured" className="ml-2 block text-sm text-gray-900">
-                Featured Content
-              </label>
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isPublished"
-                checked={formData.isPublished}
-                onChange={(e) => handleInputChange('isPublished', e.target.checked)}
-                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-              />
-              <label htmlFor="isPublished" className="ml-2 block text-sm text-gray-900">
-                Published
-              </label>
-            </div>
-          </div>
+        <div className="flex justify-end gap-4 mt-8">
+            <button
+                type="button"
+                onClick={(e) => handleSubmit(e, false)}
+                disabled={isLoading}
+                className="px-6 py-2 border border-border rounded-md text-text-secondary hover:bg-background"
+            >
+                Save as Draft
+            </button>
+            <button
+                type="submit"
+                onClick={(e) => handleSubmit(e, true)}
+                disabled={isLoading}
+                className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+                {isLoading ? 'Publishing...' : 'Publish Content'}
+            </button>
         </div>
       </form>
-    </CMSLayout>
+    </div>
   );
 }

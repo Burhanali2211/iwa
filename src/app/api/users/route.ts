@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import bcrypt from 'bcryptjs';
+// import bcrypt from 'bcryptjs';
 import { requireAuth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 
 const createUserSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -11,33 +11,31 @@ const createUserSchema = z.object({
   role: z.enum(['STUDENT', 'TEACHER', 'PARENT', 'ADMIN']),
   phone: z.string().optional(),
   address: z.string().optional(),
-  dateOfBirth: z.string().optional(),
+  date_of_birth: z.string().optional(),
   // Student specific fields
   studentProfile: z.object({
-    rollNumber: z.string().optional(),
+    roll_number: z.string().optional(),
     class: z.string(),
     section: z.string().optional(),
-    fatherName: z.string(),
-    motherName: z.string().optional(),
-    guardianPhone: z.string(),
-    emergencyContact: z.string().optional(),
-    bloodGroup: z.string().optional(),
-    medicalInfo: z.string().optional(),
+    father_name: z.string(),
+    mother_name: z.string().optional(),
+    guardian_phone: z.string(),
+    emergency_contact: z.string().optional(),
+    blood_group: z.string().optional(),
+    medical_info: z.string().optional(),
   }).optional(),
   // Teacher specific fields
   teacherProfile: z.object({
-    employeeId: z.string().optional(),
+    employee_id: z.string().optional(),
     department: z.string(),
     subjects: z.array(z.string()),
     qualification: z.string(),
     experience: z.number().min(0),
-    isClassTeacher: z.boolean().optional(),
-    classAssigned: z.string().optional(),
+    is_class_teacher: z.boolean().optional(),
+    class_assigned: z.string().optional(),
     salary: z.number().optional(),
   }).optional(),
 });
-
-
 
 // GET - Fetch all users (Admin only)
 export async function GET(request: NextRequest) {
@@ -52,37 +50,52 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const skip = (page - 1) * limit;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    const whereClause: { role?: string; OR?: Array<{ name?: { contains: string; mode: string }; email?: { contains: string; mode: string } }> } = {};
+    let query = supabase
+      .from('users')
+      .select('*, students(*), teachers(*)');
+
+    let countQuery = supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true });
 
     if (role && role !== 'ALL') {
-      whereClause.role = role;
+      query = query.eq('role', role);
+      countQuery = countQuery.eq('role', role);
     }
 
     if (search) {
-      whereClause.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-      ];
+      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`);
+      countQuery = countQuery.or(`name.ilike.%${search}%,email.ilike.%${search}%`);
     }
 
-    const [users, totalCount] = await Promise.all([
-      prisma.user.findMany({
-        where: whereClause,
-        include: {
-          studentProfile: true,
-          teacherProfile: true,
-        },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-      prisma.user.count({ where: whereClause }),
-    ]);
+    // Get total count for pagination
+    const { count: totalCount, error: countError } = await countQuery;
+    const count = countError ? 0 : (totalCount || 0);
 
-    // Remove password from response
-    const sanitizedUsers = users.map(({ password, ...userWithoutPassword }) => userWithoutPassword);
+    const { data: users, error } = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      return NextResponse.json(
+        { error: 'Failed to fetch users' },
+        { status: 500 }
+      );
+    }
+
+    // Remove password from response and transform data structure
+    const sanitizedUsers = users.map(({ password, students, teachers, ...userWithoutPassword }) => {
+      const transformedUser = {
+        ...userWithoutPassword,
+        studentProfile: students || null,
+        teacherProfile: teachers || null,
+      };
+      
+      return transformedUser;
+    });
 
     return NextResponse.json({
       success: true,
@@ -90,8 +103,8 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        totalCount,
-        totalPages: Math.ceil(totalCount / limit),
+        totalCount: count,
+        totalPages: Math.ceil(count / limit),
       },
     });
 
@@ -111,14 +124,17 @@ export async function POST(request: NextRequest) {
     if ('error' in authResult) {
       return authResult.error;
     }
+    const bcrypt = require('bcryptjs');
 
     const body = await request.json();
     const validatedData = createUserSchema.parse(body);
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: validatedData.email }
-    });
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', validatedData.email)
+      .single();
 
     if (existingUser) {
       return NextResponse.json(
@@ -130,67 +146,71 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(validatedData.password, 12);
 
-    // Create user with transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // Create main user
-      const user = await tx.user.create({
-        data: {
-          name: validatedData.name,
-          email: validatedData.email,
-          password: hashedPassword,
-          role: validatedData.role,
-          phone: validatedData.phone,
-          address: validatedData.address,
-          dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
-        },
-      });
+    // Create main user
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .insert({
+        name: validatedData.name,
+        email: validatedData.email,
+        password: hashedPassword,
+        role: validatedData.role,
+        phone: validatedData.phone,
+        address: validatedData.address,
+        date_of_birth: validatedData.date_of_birth,
+        is_active: true,
+      })
+      .select()
+      .single();
 
-      // Create role-specific profile
-      if (validatedData.role === 'STUDENT' && validatedData.studentProfile) {
-        await tx.student.create({
-          data: {
-            userId: user.id,
-            rollNumber: validatedData.studentProfile.rollNumber || `STU${Date.now()}`,
-            class: validatedData.studentProfile.class,
-            section: validatedData.studentProfile.section,
-            fatherName: validatedData.studentProfile.fatherName,
-            motherName: validatedData.studentProfile.motherName,
-            guardianPhone: validatedData.studentProfile.guardianPhone,
-            emergencyContact: validatedData.studentProfile.emergencyContact,
-            bloodGroup: validatedData.studentProfile.bloodGroup,
-            medicalInfo: validatedData.studentProfile.medicalInfo,
-          }
+    if (userError) {
+      return NextResponse.json(
+        { error: 'Failed to create user' },
+        { status: 500 }
+      );
+    }
+
+    // Create role-specific profile
+    if (validatedData.role === 'STUDENT' && validatedData.studentProfile) {
+      const { error: studentError } = await supabase
+        .from('students')
+        .insert({
+          user_id: user.id,
+          roll_number: validatedData.studentProfile.roll_number || `STU${Date.now()}`,
+          class: validatedData.studentProfile.class,
+          section: validatedData.studentProfile.section,
+          father_name: validatedData.studentProfile.father_name,
+          mother_name: validatedData.studentProfile.mother_name,
+          guardian_phone: validatedData.studentProfile.guardian_phone,
+          emergency_contact: validatedData.studentProfile.emergency_contact,
+          blood_group: validatedData.studentProfile.blood_group,
+          medical_info: validatedData.studentProfile.medical_info,
         });
-      } else if (validatedData.role === 'TEACHER' && validatedData.teacherProfile) {
-        await tx.teacher.create({
-          data: {
-            userId: user.id,
-            employeeId: validatedData.teacherProfile.employeeId || `EMP${Date.now()}`,
-            department: validatedData.teacherProfile.department,
-            subjects: JSON.stringify(validatedData.teacherProfile.subjects || []),
-            qualification: validatedData.teacherProfile.qualification,
-            experience: validatedData.teacherProfile.experience,
-            isClassTeacher: validatedData.teacherProfile.isClassTeacher || false,
-            classAssigned: validatedData.teacherProfile.classAssigned,
-            salary: validatedData.teacherProfile.salary,
-          }
-        });
+
+      if (studentError) {
+        console.error('Student profile creation error:', studentError);
       }
+    } else if (validatedData.role === 'TEACHER' && validatedData.teacherProfile) {
+      const { error: teacherError } = await supabase
+        .from('teachers')
+        .insert({
+          user_id: user.id,
+          employee_id: validatedData.teacherProfile.employee_id || `EMP${Date.now()}`,
+          department: validatedData.teacherProfile.department,
+          subjects: JSON.stringify(validatedData.teacherProfile.subjects || []),
+          qualification: validatedData.teacherProfile.qualification,
+          experience: validatedData.teacherProfile.experience,
+          is_class_teacher: validatedData.teacherProfile.is_class_teacher || false,
+          class_assigned: validatedData.teacherProfile.class_assigned,
+          salary: validatedData.teacherProfile.salary,
+        });
 
-      return user;
-    });
-
-    // Fetch complete user data
-    const newUser = await prisma.user.findUnique({
-      where: { id: result.id },
-      include: {
-        studentProfile: true,
-        teacherProfile: true,
-      },
-    });
+      if (teacherError) {
+        console.error('Teacher profile creation error:', teacherError);
+      }
+    }
 
     // Remove password from response
-    const { password, ...userWithoutPassword } = newUser!;
+    const { password, ...userWithoutPassword } = user;
 
     return NextResponse.json({
       success: true,

@@ -36,18 +36,19 @@ const publicRoutes = [
 
 export async function middleware(request: NextRequest) {
   // Skip authentication in development mode
-  if (process.env.NODE_ENV === 'development') {
-    return NextResponse.next();
-  }
+  // if (process.env.NODE_ENV === 'development') {
+  //   return NextResponse.next();
+  // }
 
   const { pathname } = request.nextUrl;
 
-  // Skip middleware for static files and ALL API routes
+  // Skip middleware for static files and API routes that don't require auth
   if (
     pathname.startsWith('/_next/') ||
-    pathname.startsWith('/api/') ||
     pathname.includes('.') ||
-    pathname === '/favicon.ico'
+    pathname === '/favicon.ico' ||
+    pathname.startsWith('/api/auth/') || // Skip auth routes
+    pathname.startsWith('/api/test-db') // Skip test routes
   ) {
     return NextResponse.next();
   }
@@ -139,11 +140,10 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 
 const submitAssignmentSchema = z.object({
   assignmentId: z.string(),
@@ -21,9 +21,11 @@ export async function POST(request: NextRequest) {
     const validatedData = submitAssignmentSchema.parse(body);
 
     // Check if assignment exists
-    const assignment = await prisma.assignment.findUnique({
-      where: { id: validatedData.assignmentId }
-    });
+    const { data: assignment } = await supabase
+      .from('assignments')
+      .select('id, due_date, title, subject, max_marks')
+      .eq('id', validatedData.assignmentId)
+      .single();
 
     if (!assignment) {
       return NextResponse.json(
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     // Check if assignment is still open for submission
     const now = new Date();
-    if (now > assignment.dueDate) {
+    if (now > new Date(assignment.due_date)) {
       return NextResponse.json(
         { error: 'Assignment submission deadline has passed' },
         { status: 400 }
@@ -42,14 +44,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if student has already submitted
-    const existingSubmission = await prisma.assignmentSubmission.findUnique({
-      where: {
-        assignmentId_userId: {
-          assignmentId: validatedData.assignmentId,
-          userId: authResult.user.userId,
-        }
-      }
-    });
+    const { data: existingSubmission } = await supabase
+      .from('assignment_submissions')
+      .select('id')
+      .eq('assignment_id', validatedData.assignmentId)
+      .eq('user_id', authResult.user.userId)
+      .single();
 
     if (existingSubmission) {
       return NextResponse.json(
@@ -59,31 +59,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Create submission
-    const submission = await prisma.assignmentSubmission.create({
-      data: {
-        assignmentId: validatedData.assignmentId,
-        userId: authResult.user.userId,
+    const { data: submission, error } = await supabase
+      .from('assignment_submissions')
+      .insert({
+        assignment_id: validatedData.assignmentId,
+        user_id: authResult.user.userId,
         content: validatedData.content,
         attachments: JSON.stringify(validatedData.attachments || []),
-        submittedAt: new Date(),
+        submitted_at: new Date().toISOString(),
         status: 'SUBMITTED',
-      },
-      include: {
-        assignment: {
-          select: {
-            title: true,
-            subject: true,
-            maxMarks: true,
-          }
-        },
-        user: {
-          select: {
-            name: true,
-            email: true,
-          }
-        }
-      }
-    });
+      })
+      .select('*, assignments(title, subject, max_marks), users(name, email)')
+      .single();
+
+    if (error) {
+      return NextResponse.json(
+        { error: 'Failed to submit assignment' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -127,12 +121,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if assignment exists and teacher has access
-    const assignment = await prisma.assignment.findUnique({
-      where: { id: assignmentId },
-      include: {
-        teacher: true,
-      }
-    });
+    const { data: assignment } = await supabase
+      .from('assignments')
+      .select('id, title, subject, class, due_date, max_marks, teacher_id')
+      .eq('id', assignmentId)
+      .single();
 
     if (!assignment) {
       return NextResponse.json(
@@ -143,11 +136,13 @@ export async function GET(request: NextRequest) {
 
     // If teacher, check if they own this assignment
     if (authResult.user.role === 'TEACHER') {
-      const teacher = await prisma.teacher.findUnique({
-        where: { userId: authResult.user.userId }
-      });
+      const { data: teacher } = await supabase
+        .from('teachers')
+        .select('id')
+        .eq('user_id', authResult.user.userId)
+        .single();
 
-      if (teacher && assignment.teacherId !== teacher.id) {
+      if (teacher && assignment.teacher_id !== teacher.id) {
         return NextResponse.json(
           { error: 'Access denied to this assignment' },
           { status: 403 }
@@ -156,27 +151,18 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all submissions for this assignment
-    const submissions = await prisma.assignmentSubmission.findMany({
-      where: { assignmentId },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-            studentProfile: {
-              select: {
-                rollNumber: true,
-                class: true,
-                section: true,
-              }
-            }
-          }
-        }
-      },
-      orderBy: {
-        submittedAt: 'desc'
-      }
-    });
+    const { data: submissions, error } = await supabase
+      .from('assignment_submissions')
+      .select('*, users(name, email, students(roll_number, class, section))')
+      .eq('assignment_id', assignmentId)
+      .order('submitted_at', { ascending: false });
+
+    if (error) {
+      return NextResponse.json(
+        { error: 'Failed to fetch submissions' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -185,8 +171,8 @@ export async function GET(request: NextRequest) {
         title: assignment.title,
         subject: assignment.subject,
         class: assignment.class,
-        dueDate: assignment.dueDate,
-        maxMarks: assignment.maxMarks,
+        dueDate: assignment.due_date,
+        maxMarks: assignment.max_marks,
       },
       submissions,
       submissionCount: submissions.length,

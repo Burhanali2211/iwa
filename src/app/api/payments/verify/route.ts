@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import crypto from 'crypto';
 import { razorpay, paiseToRupees } from '@/lib/razorpay';
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 import { getAuthUser } from '@/lib/auth';
 
 const verifyPaymentSchema = z.object({
@@ -59,22 +59,25 @@ export async function POST(request: NextRequest) {
 
     if (paymentType === 'donation') {
       // Save donation record
-      savedRecord = await prisma.donation.create({
-        data: {
-          userId: authUser?.userId || null,
-          donorName: String(notes.donorName || 'Anonymous'),
-          donorEmail: notes.donorEmail ? String(notes.donorEmail) : null,
-          donorPhone: notes.donorPhone ? String(notes.donorPhone) : null,
+      const { data: donation, error } = await supabase
+        .from('donations')
+        .insert({
+          user_id: authUser?.userId || null,
+          donor_name: String(notes.donorName || 'Anonymous'),
+          donor_email: notes.donorEmail ? String(notes.donorEmail) : null,
+          donor_phone: notes.donorPhone ? String(notes.donorPhone) : null,
           amount: amount,
-          donationType: (notes.donationType as string) || 'GENERAL',
-          paymentMethod: 'RAZORPAY',
-          transactionId: validatedData.razorpay_payment_id,
+          donation_type: (notes.donationType as string) || 'GENERAL',
+          payment_method: 'RAZORPAY',
+          transaction_id: validatedData.razorpay_payment_id,
           status: 'COMPLETED',
           message: notes.description ? String(notes.description) : null,
-          isAnonymous: String(notes.isAnonymous) === 'true',
-          receiptUrl: null, // Will be generated later
-        },
-      });
+          is_anonymous: String(notes.isAnonymous) === 'true',
+          receipt_url: null,
+        })
+        .select()
+        .single();
+      savedRecord = donation;
     } else if (paymentType === 'fee') {
       // Save fee payment record
       if (!notes.studentId) {
@@ -83,20 +86,22 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-
-      savedRecord = await prisma.feePayment.create({
-        data: {
-          studentId: String(notes.studentId),
+      const { data: feePayment, error } = await supabase
+        .from('fee_payments')
+        .insert({
+          student_id: String(notes.studentId),
           amount: amount,
-          feeType: String(notes.feeType || 'MISCELLANEOUS'),
-          paymentMethod: 'RAZORPAY',
-          transactionId: validatedData.razorpay_payment_id,
+          fee_type: String(notes.feeType || 'MISCELLANEOUS'),
+          payment_method: 'RAZORPAY',
+          transaction_id: validatedData.razorpay_payment_id,
           status: 'COMPLETED',
-          dueDate: new Date(), // This should be set based on actual due date
-          paidDate: new Date(),
-          receiptUrl: null, // Will be generated later
-        },
-      });
+          due_date: new Date().toISOString(),
+          paid_date: new Date().toISOString(),
+          receipt_url: null,
+        })
+        .select()
+        .single();
+      savedRecord = feePayment;
     }
 
     // Generate receipt URL (placeholder for now)
@@ -104,15 +109,15 @@ export async function POST(request: NextRequest) {
 
     // Update the record with receipt URL
     if (paymentType === 'donation' && savedRecord) {
-      await prisma.donation.update({
-        where: { id: savedRecord.id },
-        data: { receiptUrl },
-      });
+      await supabase
+        .from('donations')
+        .update({ receipt_url: receiptUrl })
+        .eq('id', savedRecord.id);
     } else if (paymentType === 'fee' && savedRecord) {
-      await prisma.feePayment.update({
-        where: { id: savedRecord.id },
-        data: { receiptUrl },
-      });
+      await supabase
+        .from('fee_payments')
+        .update({ receipt_url: receiptUrl })
+        .eq('id', savedRecord.id);
     }
 
     return NextResponse.json({

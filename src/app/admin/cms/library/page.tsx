@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import CMSLayout from '@/components/admin/CMSLayout';
 import {
   Plus,
   Edit,
@@ -45,8 +44,6 @@ interface LibraryStats {
   digitalBooks: number;
   totalBorrows: number;
 }
-
-
 
 interface APILibraryBook {
   id: string;
@@ -183,8 +180,6 @@ export default function LibraryCMS() {
     }
   };
 
-
-
   const filteredBooks = books.filter(book => {
     const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -198,58 +193,49 @@ export default function LibraryCMS() {
   const categories = Array.from(new Set(books.map(book => book.category)));
   const languages = Array.from(new Set(books.flatMap(book => book.language.split('/'))));
 
-  const breadcrumbs = [
-    { label: 'Admin', href: '/admin' },
-    { label: 'CMS', href: '/admin/cms' },
-    { label: 'Library Management' }
-  ];
-
-  const actions = (
-    <div className="flex items-center space-x-3">
-      <button
-        onClick={() => {
-          // Export library catalog
-          toast.success('Library catalog exported successfully');
-        }}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <Download className="h-4 w-4" />
-        <span>Export</span>
-      </button>
-      <button
-        onClick={() => router.push('/admin/cms/library/create')}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <Plus className="h-4 w-4" />
-        <span>Add Book</span>
-      </button>
-    </div>
-  );
-
   if (isLoading) {
     return (
-      <CMSLayout title="Library Management" breadcrumbs={breadcrumbs}>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
         </div>
-      </CMSLayout>
     );
   }
 
   return (
-    <CMSLayout 
-      title="Library Management" 
-      description="Manage Islamic books, digital resources, and library catalog"
-      breadcrumbs={breadcrumbs}
-      actions={actions}
-    >
+    <div className="p-1">
+        <header className="bg-surface p-6 rounded-lg shadow-card mb-8">
+            <div className="flex justify-between items-center">
+                <div>
+                    <div className="flex items-center text-sm text-text-muted mb-2">
+                        <span className="cursor-pointer hover:text-foreground" onClick={() => router.push('/admin')}>Admin</span>
+                        <span className="mx-2">/</span>
+                        <span className="cursor-pointer hover:text-foreground" onClick={() => router.push('/admin/cms')}>CMS</span>
+                        <span className="mx-2">/</span>
+                        <span>Library Management</span>
+                    </div>
+                    <h1 className="text-3xl font-bold text-foreground">Library Management</h1>
+                    <p className="text-text-secondary mt-1">Manage Islamic books, digital resources, and library catalog</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button className="flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border text-text-secondary hover:bg-background">
+                        <Download className="h-4 w-4" />
+                        Export
+                    </button>
+                    <button onClick={() => router.push('/admin/cms/library/create')} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                        <Plus className="h-4 w-4" />
+                        Add Book
+                    </button>
+                </div>
+            </div>
+        </header>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-surface rounded-lg shadow-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Books</p>
-              <p className="text-2xl font-bold text-gray-900">{stats?.totalBooks || books.length}</p>
+              <p className="text-sm font-medium text-text-muted">Total Books</p>
+              <p className="text-2xl font-bold text-foreground">{stats?.totalBooks || 0}</p>
             </div>
             <div className="bg-blue-100 p-3 rounded-lg">
               <BookOpen className="h-6 w-6 text-blue-600" />
@@ -257,27 +243,23 @@ export default function LibraryCMS() {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-surface rounded-lg shadow-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Available</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {stats?.availableBooks || books.reduce((sum, book) => sum + book.availableCopies, 0)}
-              </p>
+              <p className="text-sm font-medium text-text-muted">Available</p>
+              <p className="text-2xl font-bold text-foreground">{stats?.availableBooks || 0}</p>
             </div>
             <div className="bg-green-100 p-3 rounded-lg">
-              <Eye className="h-6 w-6 text-green-600" />
+              <Star className="h-6 w-6 text-green-600" />
             </div>
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-surface rounded-lg shadow-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Digital Books</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {stats?.digitalBooks || books.filter(book => book.isDigital).length}
-              </p>
+              <p className="text-sm font-medium text-text-muted">Digital Books</p>
+              <p className="text-2xl font-bold text-foreground">{stats?.digitalBooks || 0}</p>
             </div>
             <div className="bg-purple-100 p-3 rounded-lg">
               <Download className="h-6 w-6 text-purple-600" />
@@ -285,13 +267,11 @@ export default function LibraryCMS() {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-surface rounded-lg shadow-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Borrows</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {stats?.totalBorrows || books.reduce((sum, book) => sum + book.borrowCount, 0)}
-              </p>
+              <p className="text-sm font-medium text-text-muted">Total Borrows</p>
+              <p className="text-2xl font-bold text-foreground">{stats?.totalBorrows || 0}</p>
             </div>
             <div className="bg-orange-100 p-3 rounded-lg">
               <Users className="h-6 w-6 text-orange-600" />
@@ -301,140 +281,107 @@ export default function LibraryCMS() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-          <div className="flex items-center space-x-4">
+      <div className="bg-surface rounded-lg shadow-card p-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="col-span-1 md:col-span-2">
+            <label className="block text-sm font-medium text-text-secondary mb-2">Search</label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted" />
               <input
                 type="text"
-                placeholder="Search books..."
+                placeholder="Search by title, author, description..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary"
               />
             </div>
-            
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">Category</label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Categories</option>
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
+              {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
-            
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">Language</label>
             <select
               value={selectedLanguage}
               onChange={(e) => setSelectedLanguage(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Languages</option>
-              {languages.map(language => (
-                <option key={language} value={language}>{language}</option>
-              ))}
+              {languages.map(lang => <option key={lang} value={lang}>{lang}</option>)}
             </select>
-          </div>
-          
-          <div className="text-sm text-gray-600">
-            Showing {filteredBooks.length} of {books.length} books
           </div>
         </div>
       </div>
 
-      {/* Books Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredBooks.map((book) => (
-          <div key={book.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
-            <div className="aspect-[3/4] bg-gray-200 rounded-t-lg overflow-hidden">
-              {book.imageUrl ? (
-                <Image
-                  src={book.imageUrl}
-                  alt={book.title}
-                  width={300}
-                  height={400}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <BookOpen className="h-16 w-16 text-gray-400" />
-                </div>
-              )}
-            </div>
-            
-            <div className="p-4">
-              <div className="flex items-start justify-between mb-2">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(book.category)}`}>
-                  {book.category}
-                </span>
-                <div className="flex items-center space-x-1">
-                  {book.isDigital && (
-                    <div title="Digital Available">
-                      <Download className="h-4 w-4 text-blue-500" />
+      {/* Books Table */}
+      <div className="bg-surface rounded-lg shadow-card overflow-x-auto">
+        <table className="w-full text-left">
+          <thead className="bg-background">
+            <tr>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Book</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Author</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Category</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Status</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Copies</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredBooks.map((book) => (
+              <tr key={book.id} className="border-b border-border hover:bg-background">
+                <td className="p-4">
+                  <div className="flex items-center space-x-4">
+                    <Image
+                      src={book.imageUrl || '/library.jpg'}
+                      alt={book.title}
+                      width={40}
+                      height={56}
+                      className="rounded-md object-cover"
+                    />
+                    <div>
+                      <p className="font-semibold text-foreground">{book.title}</p>
+                      <p className="text-sm text-text-muted">{book.publishedYear}</p>
                     </div>
-                  )}
-                  <div className="flex items-center">
-                    <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                    <span className="text-xs text-gray-600 ml-1">{book.rating}</span>
                   </div>
-                </div>
-              </div>
-              
-              <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">{book.title}</h3>
-              <p className="text-xs text-gray-600 mb-2">{book.author}</p>
-              <p className="text-xs text-gray-500 mb-3 line-clamp-2">{book.description}</p>
-              
-              <div className="space-y-2 mb-3">
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>Available: {book.availableCopies}/{book.totalCopies}</span>
-                  <span>Borrowed: {book.borrowCount}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>{book.language}</span>
-                  <span>{book.publishedYear}</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => router.push(`/admin/cms/library/books/${book.id}`)}
-                    className="text-blue-600 hover:text-blue-900 p-1"
-                    title="View"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => router.push(`/admin/cms/library/books/${book.id}/edit`)}
-                    className="text-green-600 hover:text-green-900 p-1"
-                    title="Edit"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(book.id, book.title)}
-                    className="text-red-600 hover:text-red-900 p-1"
-                    title="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-                
-                {book.isDigital && book.digitalUrl && (
-                  <button
-                    onClick={() => window.open(book.digitalUrl, '_blank')}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors"
-                  >
-                    Download
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
+                </td>
+                <td className="p-4 text-sm text-text-secondary">{book.author}</td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(book.category)}`}>
+                    {book.category}
+                  </span>
+                </td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${book.isActive ? 'bg-success/20 text-success' : 'bg-gray-200 text-gray-700'}`}>
+                    {book.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </td>
+                <td className="p-4 text-sm text-text-secondary">{book.availableCopies} / {book.totalCopies}</td>
+                <td className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <button onClick={() => router.push(`/admin/cms/library/${book.id}/edit`)} className="p-2 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-md">
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => router.push(`/library/catalog?book=${book.id}`)} className="p-2 text-text-secondary hover:text-info hover:bg-info/10 rounded-md">
+                      <Eye className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => handleDelete(book.id, book.title)} className="p-2 text-text-secondary hover:text-destructive hover:bg-destructive/10 rounded-md">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </CMSLayout>
+    </div>
   );
 }

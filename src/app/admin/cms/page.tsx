@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import CMSLayout from '@/components/admin/CMSLayout';
 import {
   Home,
   BookOpen,
@@ -257,193 +256,141 @@ export default function CMSOverview() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: true
     });
   };
 
-  const breadcrumbs = [
-    { label: 'Admin', href: '/admin' },
-    { label: 'Content Management System' }
-  ];
-
-  const actions = (
-    <div className="flex items-center space-x-3">
-      <button
-        onClick={() => window.open('/', '_blank')}
-        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <Eye className="h-4 w-4" />
-        <span>Preview Site</span>
-      </button>
-      <button
-        onClick={fetchCMSStats}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <BarChart3 className="h-4 w-4" />
-        <span>Refresh Stats</span>
-      </button>
+  const StatCard = ({
+    title,
+    value,
+    icon: Icon,
+    color,
+    bgColor,
+  }: {
+    title: string;
+    value: string;
+    icon: React.ComponentType<{ className?: string }>;
+    color: string;
+    bgColor: string;
+  }) => (
+    <div className="bg-surface p-4 rounded-lg shadow-card flex items-center">
+      <div className={`p-3 rounded-lg ${bgColor} mr-4`}>
+        <Icon className={`h-6 w-6 ${color}`} />
+      </div>
+      <div>
+        <p className="text-sm text-text-muted">{title}</p>
+        <p className="text-2xl font-bold text-foreground">{value}</p>
+      </div>
     </div>
   );
 
   if (isLoading) {
     return (
-      <CMSLayout title="Content Management System" breadcrumbs={breadcrumbs}>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-        </div>
-      </CMSLayout>
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
+      </div>
     );
   }
 
   return (
-    <CMSLayout 
-      title="Content Management System" 
-      description="Manage all website content from one central location"
-      breadcrumbs={breadcrumbs}
-      actions={actions}
-    >
-      {/* Overview Stats */}
+    <div className="p-1">
+      <header className="bg-surface p-6 rounded-lg shadow-card mb-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <div className="flex items-center text-sm text-text-muted mb-2">
+              <span className="cursor-pointer hover:text-foreground" onClick={() => router.push('/admin')}>Admin</span>
+              <span className="mx-2">/</span>
+              <span>Content Management System</span>
+            </div>
+            <h1 className="text-3xl font-bold text-foreground">Content Management System</h1>
+            <p className="text-text-secondary mt-1">Manage all website content from one central location</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <button className="flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border text-text-secondary hover:bg-background">
+              <Eye className="h-4 w-4" />
+              Preview Site
+            </button>
+            <button className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+              <Activity className="h-4 w-4" />
+              Refresh Stats
+            </button>
+          </div>
+        </div>
+      </header>
+
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Content</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalContent}</p>
-              </div>
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <FileText className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Published</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.publishedContent}</p>
-              </div>
-              <div className="bg-green-100 p-3 rounded-lg">
-                <Eye className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Drafts</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.draftContent}</p>
-              </div>
-              <div className="bg-yellow-100 p-3 rounded-lg">
-                <Edit className="h-6 w-6 text-yellow-600" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Views</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalViews.toLocaleString()}</p>
-              </div>
-              <div className="bg-purple-100 p-3 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard title="Total Content" value={stats.totalContent.toString()} icon={FileText} color="text-blue-600" bgColor="bg-blue-100" />
+          <StatCard title="Published" value={stats.publishedContent.toString()} icon={BookOpen} color="text-green-600" bgColor="bg-green-100" />
+          <StatCard title="Drafts" value={stats.draftContent.toString()} icon={Edit} color="text-yellow-600" bgColor="bg-yellow-100" />
+          <StatCard title="Total Views" value={stats.totalViews.toLocaleString()} icon={BarChart3} color="text-purple-600" bgColor="bg-purple-100" />
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* CMS Sections */}
         <div className="lg:col-span-2">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Content Sections</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-4">Content Sections</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {cmsSections.map((section) => {
-              const Icon = section.icon;
-              return (
-                <div key={section.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`p-3 rounded-lg ${section.bgColor}`}>
-                        <Icon className={`h-6 w-6 ${section.color}`} />
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-500">Last updated</p>
-                        <p className="text-xs text-gray-400">{formatDate(section.stats.lastUpdated)}</p>
-                      </div>
-                    </div>
-                    
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{section.name}</h3>
-                    <p className="text-sm text-gray-600 mb-4">{section.description}</p>
-                    
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                      <span>{section.stats.published}/{section.stats.total} published</span>
-                      <div className="w-24 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-green-500 h-2 rounded-full" 
-                          style={{ width: `${(section.stats.published / section.stats.total) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <button
-                        onClick={() => router.push(section.href)}
-                        className={`w-full ${section.color.replace('text-', 'bg-').replace('-600', '-600')} hover:${section.color.replace('text-', 'bg-').replace('-600', '-700')} text-white px-4 py-2 rounded-lg font-medium transition-colors`}
-                      >
-                        Manage {section.name}
-                      </button>
-                      
-                      <div className="flex items-center space-x-2">
-                        {section.quickActions.map((action, index) => {
-                          const ActionIcon = action.icon;
-                          return (
-                            <button
-                              key={index}
-                              onClick={() => router.push(action.href)}
-                              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1"
-                            >
-                              <ActionIcon className="h-3 w-3" />
-                              <span>{action.label}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+            {cmsSections.map((section) => (
+              <div key={section.id} className="bg-surface p-6 rounded-lg shadow-card flex flex-col">
+                <div className="flex justify-between items-start mb-4">
+                  <div className={`p-3 rounded-lg ${section.bgColor} mr-4`}>
+                    <section.icon className={`h-6 w-6 ${section.color}`} />
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-text-muted">Last updated</p>
+                    <p className="text-xs text-text-secondary font-medium">{formatDate(section.stats.lastUpdated)}</p>
                   </div>
                 </div>
-              );
-            })}
+                <h3 className="text-lg font-bold text-foreground">{section.name}</h3>
+                <p className="text-sm text-text-secondary my-2 flex-grow">{section.description}</p>
+                <div className="my-4">
+                    <div className="flex justify-between items-center text-xs text-text-muted mb-1">
+                        <span>{section.stats.published}/{section.stats.total} published</span>
+                        <span>{Math.round((section.stats.published/section.stats.total) * 100)}%</span>
+                    </div>
+                    <div className="w-full bg-background rounded-full h-1.5">
+                        <div className="bg-primary h-1.5 rounded-full" style={{width: `${(section.stats.published/section.stats.total) * 100}%`}}></div>
+                    </div>
+                </div>
+                <button 
+                  onClick={() => router.push(section.href)}
+                  className="w-full py-2 px-4 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors mt-auto"
+                >
+                  Manage {section.name}
+                </button>
+                <div className="flex justify-center items-center gap-2 mt-4">
+                    {section.quickActions.map(action => (
+                        <button key={action.label} onClick={() => router.push(action.href)} className="flex items-center gap-2 text-xs text-text-secondary bg-background px-3 py-1.5 rounded-md hover:text-foreground">
+                            <action.icon className="h-3 w-3" />
+                            {action.label}
+                        </button>
+                    ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Recent Activity</h2>
-          <div className="bg-white rounded-lg shadow-sm border">
-            <div className="p-6">
-              <div className="space-y-4">
-                {stats?.recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-start space-x-3">
-                    <div className="bg-green-100 p-2 rounded-lg">
-                      <Activity className="h-4 w-4 text-green-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                      <p className="text-sm text-gray-500">{activity.section}</p>
-                      <p className="text-xs text-gray-400">
-                        {formatDate(activity.timestamp)} by {activity.user}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+        <div className="lg:col-span-1">
+          <h2 className="text-2xl font-bold text-foreground mb-4">Recent Activity</h2>
+          <div className="bg-surface p-6 rounded-lg shadow-card">
+            {stats && stats.recentActivity.map((activity) => (
+              <div key={activity.id} className="flex items-start mb-6 last:mb-0">
+                <div className="bg-green-100 p-2.5 rounded-full mr-4">
+                    <Activity className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">{activity.action}</p>
+                  <p className="text-sm text-text-secondary">{activity.section}</p>
+                  <p className="text-xs text-text-muted mt-1">{formatDate(activity.timestamp)} by {activity.user}</p>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
-    </CMSLayout>
+    </div>
   );
 }

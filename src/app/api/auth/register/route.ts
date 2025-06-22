@@ -1,26 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
+import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
-
-const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  role: z.enum(['STUDENT', 'TEACHER', 'PARENT']).default('STUDENT'),
-  phone: z.string().optional(),
-  dateOfBirth: z.string().optional(),
-});
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const validatedData = registerSchema.parse(body);
+    const { email, password, name, role = 'STUDENT', phone, dateOfBirth } = await request.json();
+
+    // Validate input
+    if (!email || !password || !name) {
+      return NextResponse.json(
+        { error: 'Email, password, and name are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate role
+    const validRoles = ['STUDENT', 'TEACHER', 'PARENT'];
+    if (!validRoles.includes(role)) {
+      return NextResponse.json(
+        { error: 'Invalid role' },
+        { status: 400 }
+      );
+    }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: validatedData.email }
-    });
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
 
     if (existingUser) {
       return NextResponse.json(
@@ -30,69 +39,71 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(validatedData.password, 12);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        name: validatedData.name,
-        email: validatedData.email,
-        password: hashedPassword,
-        role: validatedData.role,
-        phone: validatedData.phone,
-        dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      }
-    });
-
-    // Create role-specific profile
-    if (validatedData.role === 'STUDENT') {
-      await prisma.student.create({
-        data: {
-          userId: user.id,
-          rollNumber: `STU${Date.now()}`, // Generate unique roll number
-          class: 'Unassigned',
-          fatherName: 'To be updated',
-          guardianPhone: validatedData.phone || 'To be updated',
+    // Create user in our users table
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .insert([
+        {
+          email: email,
+          password: hashedPassword,
+          name: name,
+          role: role,
+          phone: phone || null,
+          date_of_birth: dateOfBirth || null,
+          is_active: true,
         }
-      });
-    } else if (validatedData.role === 'TEACHER') {
-      await prisma.teacher.create({
-        data: {
-          userId: user.id,
-          employeeId: `EMP${Date.now()}`, // Generate unique employee ID
-          department: 'To be assigned',
-          subjects: JSON.stringify([]),
-          qualification: 'To be updated',
-          experience: 0,
-        }
-      });
-    }
+      ])
+      .select()
+      .single();
 
-    return NextResponse.json({
-      message: 'User registered successfully',
-      user
-    }, { status: 201 });
-
-  } catch (error) {
-    console.error('Registration error:', error);
-    
-    if (error instanceof z.ZodError) {
+    if (userError) {
+      console.error('User creation error:', userError);
       return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
+        { error: 'User creation failed' },
+        { status: 500 }
       );
     }
 
+    // Create JWT token
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.NEXTAUTH_SECRET || 'fallback-secret',
+      { expiresIn: '7d' }
+    );
+
+    // Create response
+    const response = NextResponse.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+        profile_image: user.profile_image,
+      },
+      token,
+      message: 'Registration successful',
+    });
+
+    // Set HTTP-only cookie
+    response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+    });
+
+    return response;
+  } catch (error) {
+    console.error('Registration error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );
   }
-}
+} 

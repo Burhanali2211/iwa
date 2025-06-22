@@ -20,7 +20,8 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // In development, you can use any email/password
+      console.log('Attempting login with:', { email: formData.email });
+      
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -29,27 +30,46 @@ export default function LoginPage() {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      console.log('Login response status:', response.status);
+      
+      // Check if response has content
+      const text = await response.text();
+      console.log('Login response text:', text);
+      
+      let data;
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        toast.error('Invalid response from server');
+        return;
+      }
 
       if (response.ok) {
         toast.success('Login successful!');
         
         // Store user data in localStorage for client-side access
-        localStorage.setItem('user', JSON.stringify(data.user));
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
         
         // Redirect based on user role
-        switch (data.user.role) {
-          case 'ADMIN':
-            router.push('/admin');
-            break;
-          case 'TEACHER':
-            router.push('/school/teacher');
-            break;
-          case 'STUDENT':
-            router.push('/school/student');
-            break;
-          default:
-            router.push('/');
+        if (data.user && data.user.role) {
+          switch (data.user.role) {
+            case 'ADMIN':
+              router.push('/admin');
+              break;
+            case 'TEACHER':
+              router.push('/school/teacher');
+              break;
+            case 'STUDENT':
+              router.push('/school/student');
+              break;
+            default:
+              router.push('/');
+          }
+        } else {
+          router.push('/');
         }
       } else {
         toast.error(data.error || 'Login failed');

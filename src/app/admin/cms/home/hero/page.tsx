@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import CMSLayout from '@/components/admin/CMSLayout';
 import {
   Save,
   Eye,
@@ -107,103 +106,101 @@ export default function HeroSectionEditor() {
     }
   };
 
-  const breadcrumbs = [
-    { label: 'Admin', href: '/admin' },
-    { label: 'CMS', href: '/admin/cms' },
-    { label: 'Home Page', href: '/admin/cms/home' },
-    { label: 'Hero Section' }
-  ];
-
-  const actions = (
-    <div className="flex items-center space-x-3">
-      <button
-        onClick={() => window.open('/', '_blank')}
-        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <Eye className="h-4 w-4" />
-        <span>Preview</span>
-      </button>
-      <button
-        onClick={handleSave}
-        disabled={!hasChanges || isSaving}
-        className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
-          hasChanges && !isSaving
-            ? 'bg-green-600 hover:bg-green-700 text-white'
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-        }`}
-      >
-        {isSaving ? (
-          <RefreshCw className="h-4 w-4 animate-spin" />
-        ) : (
-          <Save className="h-4 w-4" />
-        )}
-        <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
-      </button>
-    </div>
-  );
-
   if (isLoading) {
     return (
-      <CMSLayout title="Hero Section Editor" breadcrumbs={breadcrumbs}>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
         </div>
-      </CMSLayout>
     );
   }
 
   return (
-    <CMSLayout 
-      title="Hero Section Editor" 
-      description="Edit the main hero section content and appearance"
-      breadcrumbs={breadcrumbs}
-      actions={actions}
-    >
+    <div className="p-1">
+        <header className="bg-surface p-6 rounded-lg shadow-card mb-8">
+            <div className="flex justify-between items-center">
+                <div>
+                    <div className="flex items-center text-sm text-text-muted mb-2">
+                        <span className="cursor-pointer hover:text-foreground">Admin</span>
+                        <span className="mx-2">/</span>
+                        <span className="cursor-pointer hover:text-foreground">CMS</span>
+                        <span className="mx-2">/</span>
+                        <span className="cursor-pointer hover:text-foreground">Home</span>
+                        <span className="mx-2">/</span>
+                        <span>Hero Section</span>
+                    </div>
+                    <h1 className="text-3xl font-bold text-foreground">Hero Section Editor</h1>
+                    <p className="text-text-secondary mt-1">Edit the main hero section content and appearance</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button onClick={() => window.open('/', '_blank')} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border text-text-secondary hover:bg-background">
+                        <Eye className="h-4 w-4" />
+                        Preview
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={!hasChanges || isSaving}
+                        className={`flex items-center gap-2 text-sm px-4 py-2 rounded-md transition-colors ${
+                            hasChanges && !isSaving
+                            ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
+                    >
+                        {isSaving ? (
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        ) : (
+                        <Save className="h-4 w-4" />
+                        )}
+                        <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Content Editor */}
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Type className="h-5 w-5 mr-2 text-green-600" />
+          <div className="bg-surface rounded-lg shadow-card p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
+              <Type className="h-5 w-5 mr-2 text-primary" />
               Content Settings
             </h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
                   Main Title *
                 </label>
                 <input
                   type="text"
                   value={content.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="Enter main title"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
                   Subtitle *
                 </label>
                 <input
                   type="text"
                   value={content.subtitle}
                   onChange={(e) => handleInputChange('subtitle', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="Enter subtitle"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
                   Description
                 </label>
                 <textarea
                   value={content.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="Enter description text"
                 />
               </div>
@@ -211,35 +208,35 @@ export default function HeroSectionEditor() {
           </div>
 
           {/* Button Settings */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Link className="h-5 w-5 mr-2 text-blue-600" />
+          <div className="bg-surface rounded-lg shadow-card p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
+              <Link className="h-5 w-5 mr-2 text-info" />
               Button Settings
             </h3>
             
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
                     Primary Button Text
                   </label>
                   <input
                     type="text"
                     value={content.primaryButtonText}
                     onChange={(e) => handleInputChange('primaryButtonText', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Button text"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
                     Primary Button Link
                   </label>
                   <input
                     type="text"
                     value={content.primaryButtonLink}
                     onChange={(e) => handleInputChange('primaryButtonLink', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="/page-url"
                   />
                 </div>
@@ -247,146 +244,121 @@ export default function HeroSectionEditor() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
                     Secondary Button Text
                   </label>
                   <input
                     type="text"
                     value={content.secondaryButtonText}
                     onChange={(e) => handleInputChange('secondaryButtonText', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Button text"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
                     Secondary Button Link
                   </label>
                   <input
                     type="text"
                     value={content.secondaryButtonLink}
                     onChange={(e) => handleInputChange('secondaryButtonLink', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="/page-url"
                   />
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Visual Settings */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <ImageIcon className="h-5 w-5 mr-2 text-purple-600" />
-              Visual Settings
-            </h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Background Image URL
-                </label>
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={content.backgroundImage}
-                    onChange={(e) => handleInputChange('backgroundImage', e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                  <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
-                    <Upload className="h-4 w-4" />
-                    <span>Upload</span>
-                  </button>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Overlay Opacity: {content.overlayOpacity}%
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={content.overlayOpacity}
-                  onChange={(e) => handleInputChange('overlayOpacity', parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={content.isActive}
-                  onChange={(e) => handleInputChange('isActive', e.target.checked)}
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                />
-                <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
-                  Section is active and visible
-                </label>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Preview */}
+        {/* Appearance & Preview */}
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Eye className="h-5 w-5 mr-2 text-blue-600" />
-              Live Preview
+          <div className="bg-surface rounded-lg shadow-card p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
+              <ImageIcon className="h-5 w-5 mr-2 text-purple-600" />
+              Appearance
             </h3>
-            
-            <div className="relative bg-gray-900 rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
-              {content.backgroundImage && (
-                <Image
-                  src={content.backgroundImage}
-                  alt="Hero background"
-                  fill
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              )}
-              <div 
-                className="absolute inset-0 bg-black"
-                style={{ opacity: content.overlayOpacity / 100 }}
-              />
-              <div className="relative z-10 flex items-center justify-center h-full p-8 text-center text-white">
-                <div className="max-w-2xl">
-                  {content.title && (
-                    <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                      {content.title}
-                    </h1>
-                  )}
-                  {content.subtitle && (
-                    <h2 className="text-xl md:text-2xl font-semibold mb-4 text-green-400">
-                      {content.subtitle}
-                    </h2>
-                  )}
-                  {content.description && (
-                    <p className="text-lg mb-8 text-gray-200">
-                      {content.description}
-                    </p>
-                  )}
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    {content.primaryButtonText && (
-                      <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
-                        {content.primaryButtonText}
-                      </button>
-                    )}
-                    {content.secondaryButtonText && (
-                      <button className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-6 py-3 rounded-lg font-semibold transition-colors">
-                        {content.secondaryButtonText}
-                      </button>
-                    )}
-                  </div>
+            <div className="space-y-4">
+                <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-2">Background Image</label>
+                    <div className="mt-2 flex justify-center rounded-lg border border-dashed border-border px-6 py-10">
+                        <div className="text-center">
+                            <ImageIcon className="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
+                            <div className="mt-4 flex text-sm leading-6 text-gray-600">
+                                <label
+                                    htmlFor="file-upload"
+                                    className="relative cursor-pointer rounded-md bg-white font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary/80"
+                                >
+                                    <span>Upload a file</span>
+                                    <input id="file-upload" name="file-upload" type="file" className="sr-only" />
+                                </label>
+                                <p className="pl-1">or drag and drop</p>
+                            </div>
+                            <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
+                        </div>
+                    </div>
                 </div>
-              </div>
+                <div>
+                    <label htmlFor="opacity" className="block text-sm font-medium text-text-secondary">
+                        Overlay Opacity: <span className="font-semibold text-foreground">{content.overlayOpacity}%</span>
+                    </label>
+                    <input
+                        id="opacity"
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={content.overlayOpacity}
+                        onChange={(e) => handleInputChange('overlayOpacity', parseInt(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                </div>
+                <div>
+                    <label className="flex items-center">
+                        <input
+                            type="checkbox"
+                            checked={content.isActive}
+                            onChange={(e) => handleInputChange('isActive', e.target.checked)}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <span className="ml-2 block text-sm text-text-secondary">
+                            Enable Hero Section
+                        </span>
+                    </label>
+                </div>
+            </div>
+          </div>
+
+          <div className="bg-surface rounded-lg shadow-card p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Live Preview</h3>
+            <div className="relative w-full h-64 rounded-lg overflow-hidden border border-border">
+                <Image
+                    src="/library.jpg"
+                    alt="Hero preview"
+                    layout="fill"
+                    objectFit="cover"
+                />
+                <div
+                    className="absolute inset-0 bg-black"
+                    style={{ opacity: content.overlayOpacity / 100 }}
+                ></div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-4">
+                    <h1 className="text-2xl font-bold">{content.title}</h1>
+                    <h2 className="text-lg mt-1">{content.subtitle}</h2>
+                    <p className="text-sm mt-2 max-w-md">{content.description}</p>
+                    <div className="mt-4 space-x-4">
+                        <button className="bg-primary px-4 py-2 rounded-md text-sm font-semibold">
+                            {content.primaryButtonText}
+                        </button>
+                        <button className="bg-transparent border border-white px-4 py-2 rounded-md text-sm font-semibold">
+                            {content.secondaryButtonText}
+                        </button>
+                    </div>
+                </div>
             </div>
           </div>
         </div>
       </div>
-    </CMSLayout>
+    </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Users, BookOpen, GraduationCap, Heart, Award, Calendar, Video, Library } from 'lucide-react';
-import { StatCard } from '@/components/ui/Card';
 
 // Enhanced StatCard component with varied layouts
 interface EnhancedStatCardProps {
@@ -86,14 +85,16 @@ const EnhancedStatCard = ({
 
   // Standard layout (default)
   return (
-    <StatCard
-      icon={Icon}
-      label={label}
-      value={value}
-      color={color}
-      bgColor={bgColor}
-      variant={variant}
-    />
+    <div className={`${baseCardClass} bg-white rounded-xl p-6 shadow-lg border border-gray-100`}>
+      <div className="text-center">
+        <div className={`inline-flex p-4 rounded-full mb-4 ${bgColor}`}>
+          <Icon className={`h-8 w-8 ${color}`} />
+        </div>
+        <div className="text-3xl font-bold text-gray-900 mb-2">{value}</div>
+        <div className="text-lg font-semibold text-gray-800 mb-1">{label}</div>
+        <div className="text-sm text-gray-600">{description}</div>
+      </div>
+    </div>
   );
 };
 
@@ -333,10 +334,6 @@ const StatsSection = () => {
             </div>
           ))}
         </div>
-
-
-
-
       </div>
     </section>
   );

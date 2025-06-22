@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import CMSLayout from '@/components/admin/CMSLayout';
 import {
   Eye,
   Edit,
@@ -144,55 +143,49 @@ export default function HomePageCMS() {
     });
   };
 
-  const breadcrumbs = [
-    { label: 'Admin', href: '/admin' },
-    { label: 'CMS', href: '/admin/cms' },
-    { label: 'Home Page' }
-  ];
-
-  const actions = (
-    <div className="flex items-center space-x-3">
-      <button
-        onClick={() => window.open('/', '_blank')}
-        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <Eye className="h-4 w-4" />
-        <span>Preview Site</span>
-      </button>
-      <button
-        onClick={fetchHomeSections}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <RefreshCw className="h-4 w-4" />
-        <span>Refresh</span>
-      </button>
-    </div>
-  );
-
   if (isLoading) {
     return (
-      <CMSLayout title="Home Page CMS" breadcrumbs={breadcrumbs}>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
         </div>
-      </CMSLayout>
     );
   }
 
   return (
-    <CMSLayout 
-      title="Home Page CMS" 
-      description="Manage all sections and content on the homepage"
-      breadcrumbs={breadcrumbs}
-      actions={actions}
-    >
+    <div className="p-1">
+        <header className="bg-surface p-6 rounded-lg shadow-card mb-8">
+            <div className="flex justify-between items-center">
+                <div>
+                    <div className="flex items-center text-sm text-text-muted mb-2">
+                        <span className="cursor-pointer hover:text-foreground" onClick={() => router.push('/admin')}>Admin</span>
+                        <span className="mx-2">/</span>
+                        <span className="cursor-pointer hover:text-foreground" onClick={() => router.push('/admin/cms')}>CMS</span>
+                        <span className="mx-2">/</span>
+                        <span>Home Page</span>
+                    </div>
+                    <h1 className="text-3xl font-bold text-foreground">Home Page CMS</h1>
+                    <p className="text-text-secondary mt-1">Manage all sections and content on the homepage</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button onClick={() => window.open('/', '_blank')} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border text-text-secondary hover:bg-background">
+                        <Eye className="h-4 w-4" />
+                        Preview Site
+                    </button>
+                    <button onClick={fetchHomeSections} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                        <RefreshCw className="h-4 w-4" />
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </header>
+
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-surface rounded-lg shadow-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Sections</p>
-              <p className="text-2xl font-bold text-gray-900">{sections.length}</p>
+              <p className="text-sm font-medium text-text-muted">Total Sections</p>
+              <p className="text-2xl font-bold text-foreground">{sections.length}</p>
             </div>
             <div className="bg-blue-100 p-3 rounded-lg">
               <Type className="h-6 w-6 text-blue-600" />
@@ -200,11 +193,11 @@ export default function HomePageCMS() {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-surface rounded-lg shadow-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Active Sections</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-text-muted">Active Sections</p>
+              <p className="text-2xl font-bold text-foreground">
                 {sections.filter(s => s.isActive).length}
               </p>
             </div>
@@ -214,11 +207,11 @@ export default function HomePageCMS() {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-surface rounded-lg shadow-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Last Updated</p>
-              <p className="text-sm font-bold text-gray-900">
+              <p className="text-sm font-medium text-text-muted">Last Updated</p>
+              <p className="text-sm font-bold text-foreground">
                 {sections.length > 0 ? formatDate(sections[0].lastModified) : 'Never'}
               </p>
             </div>
@@ -228,11 +221,11 @@ export default function HomePageCMS() {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-surface rounded-lg shadow-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Page Status</p>
-              <p className="text-sm font-bold text-green-600">Live</p>
+              <p className="text-sm font-medium text-text-muted">Page Status</p>
+              <p className="text-sm font-bold text-success">Live</p>
             </div>
             <div className="bg-green-100 p-3 rounded-lg">
               <Eye className="h-6 w-6 text-green-600" />
@@ -244,53 +237,39 @@ export default function HomePageCMS() {
       {/* Sections Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {sections.map((section) => (
-          <div key={section.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+          <div key={section.id} className="bg-surface rounded-lg shadow-card">
             <div className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className={`p-2 rounded-lg ${getSectionColor(section.type)}`}>
+                  <div className={`p-2 rounded-lg ${getSectionColor(section.type).split(' ')[0]}`}>
                     {getSectionIcon(section.type)}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{section.name}</h3>
-                    <p className="text-sm text-gray-600">{section.description}</p>
+                    <h3 className="font-semibold text-foreground">{section.name}</h3>
+                    <span className={`text-xs px-2 py-1 rounded-full ${section.isActive ? 'bg-success/20 text-success' : 'bg-gray-200 text-gray-700'}`}>
+                      {section.isActive ? 'Active' : 'Inactive'}
+                    </span>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    section.isActive 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {section.isActive ? 'Active' : 'Inactive'}
-                  </span>
+                <div className="text-right">
+                  <p className="text-sm text-text-muted">Last Modified</p>
+                  <p className="text-xs text-text-secondary">{formatDate(section.lastModified)}</p>
                 </div>
               </div>
-              
-              <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                <span>Last modified: {formatDate(section.lastModified)}</span>
-              </div>
-              
-              <div className="flex items-center space-x-2">
+              <p className="text-sm text-text-secondary my-2">{section.description}</p>
+            </div>
+            <div className="bg-background px-6 py-4 border-t border-border flex items-center justify-end">
                 <button
-                  onClick={() => router.push(`/admin/cms/home/${section.id}`)}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors"
+                    onClick={() => router.push(`/admin/cms/home/${section.id}`)}
+                    className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
                 >
-                  <Edit className="h-4 w-4" />
-                  <span>Edit Section</span>
+                    <Edit className="h-4 w-4" />
+                    Edit Section
                 </button>
-                <button
-                  onClick={() => window.open(`/#${section.id}`, '_blank')}
-                  className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-                >
-                  <Eye className="h-4 w-4" />
-                  <span>Preview</span>
-                </button>
-              </div>
             </div>
           </div>
         ))}
       </div>
-    </CMSLayout>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 
 const createDonationSchema = z.object({
   donorName: z.string().min(2, 'Donor name must be at least 2 characters'),
@@ -24,72 +24,61 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
-    const skip = (page - 1) * limit;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    const whereClause: { donationType?: string; status?: string; createdAt?: { gte?: Date; lte?: Date } } = {};
+    let query = supabase
+      .from('donations')
+      .select('*, users(id, name, email)');
 
-    // Filter by donation type
     if (donationType && donationType !== 'ALL') {
-      whereClause.donationType = donationType;
+      query = query.eq('donation_type', donationType);
     }
-
-    // Filter by status
     if (status && status !== 'ALL') {
-      whereClause.status = status;
+      query = query.eq('status', status);
+    }
+    if (startDate) {
+      query = query.gte('created_at', startDate);
+    }
+    if (endDate) {
+      query = query.lte('created_at', endDate);
     }
 
-    // Filter by date range
-    if (startDate && endDate) {
-      whereClause.createdAt = {
-        gte: new Date(startDate),
-        lte: new Date(endDate),
-      };
-    } else if (startDate) {
-      whereClause.createdAt = {
-        gte: new Date(startDate),
-      };
-    } else if (endDate) {
-      whereClause.createdAt = {
-        lte: new Date(endDate),
-      };
-    }
+    const { count: totalCount, error: countError } = await supabase
+      .from('donations')
+      .select('*', { count: 'exact', head: true });
 
-    const [donations, totalCount] = await Promise.all([
-      prisma.donation.findMany({
-        where: whereClause,
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-      prisma.donation.count({ where: whereClause }),
-    ]);
+    // Get paginated donations
+    const { data: donations, error } = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      return NextResponse.json(
+        { error: 'Failed to fetch donations' },
+        { status: 500 }
+      );
+    }
 
     // Calculate summary statistics
-    const totalAmount = await prisma.donation.aggregate({
-      where: { ...whereClause, status: 'COMPLETED' },
-      _sum: {
-        amount: true,
-      },
-    });
+    const { data: totalAmountData } = await supabase
+      .from('donations')
+      .select('amount')
+      .eq('status', 'COMPLETED');
+    const totalAmount = (totalAmountData || []).reduce((sum, d) => sum + d.amount, 0);
 
-    const donationsByType = await prisma.donation.groupBy({
-      by: ['donationType'],
-      where: { ...whereClause, status: 'COMPLETED' },
-      _sum: {
-        amount: true,
-      },
-      _count: {
-        id: true,
-      },
+    // Donations by type
+    const { data: donationsByTypeData } = await supabase
+      .from('donations')
+      .select('donation_type, amount')
+      .eq('status', 'COMPLETED');
+    const donationsByType: Record<string, { amount: number; count: number }> = {};
+    (donationsByTypeData || []).forEach((d: any) => {
+      if (!donationsByType[d.donation_type]) {
+        donationsByType[d.donation_type] = { amount: 0, count: 0 };
+      }
+      donationsByType[d.donation_type].amount += d.amount;
+      donationsByType[d.donation_type].count += 1;
     });
 
     return NextResponse.json({
@@ -98,11 +87,11 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        totalCount,
-        totalPages: Math.ceil(totalCount / limit),
+        totalCount: totalCount || 0,
+        totalPages: Math.ceil((totalCount || 0) / limit),
       },
       summary: {
-        totalAmount: totalAmount._sum.amount || 0,
+        totalAmount,
         donationsByType,
       },
     });
@@ -130,29 +119,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Create donation
-    const donation = await prisma.donation.create({
-      data: {
-        userId,
-        donorName: validatedData.donorName,
-        donorEmail: validatedData.donorEmail,
-        donorPhone: validatedData.donorPhone,
+    const { data: donation, error } = await supabase
+      .from('donations')
+      .insert({
+        user_id: userId,
+        donor_name: validatedData.donorName,
+        donor_email: validatedData.donorEmail,
+        donor_phone: validatedData.donorPhone,
         amount: validatedData.amount,
-        donationType: validatedData.donationType,
-        paymentMethod: validatedData.paymentMethod,
+        donation_type: validatedData.donationType,
+        payment_method: validatedData.paymentMethod,
         message: validatedData.message,
-        isAnonymous: validatedData.isAnonymous || false,
-        status: 'PENDING', // Will be updated after payment verification
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
+        is_anonymous: validatedData.isAnonymous || false,
+        status: 'PENDING',
+      })
+      .select('*, users(id, name, email)')
+      .single();
+
+    if (error) {
+      return NextResponse.json(
+        { error: 'Failed to create donation' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -204,42 +193,29 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Check if donation exists
-    const existingDonation = await prisma.donation.findUnique({
-      where: { id: donationId }
-    });
+    // Update donation
+    const { data: updated, error } = await supabase
+      .from('donations')
+      .update({
+        status,
+        transaction_id: transactionId,
+        receipt_url: receiptUrl,
+      })
+      .eq('id', donationId)
+      .select()
+      .single();
 
-    if (!existingDonation) {
+    if (error) {
       return NextResponse.json(
-        { error: 'Donation not found' },
-        { status: 404 }
+        { error: 'Failed to update donation' },
+        { status: 500 }
       );
     }
 
-    // Update donation
-    const updatedDonation = await prisma.donation.update({
-      where: { id: donationId },
-      data: {
-        status,
-        transactionId,
-        receiptUrl,
-        updatedAt: new Date(),
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
-
     return NextResponse.json({
       success: true,
-      message: 'Donation updated successfully',
-      donation: updatedDonation,
+      message: 'Donation status updated',
+      donation: updated,
     });
 
   } catch (error) {
@@ -251,7 +227,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - Delete donation (Admin only)
+// DELETE - Remove a donation (Admin only)
 export async function DELETE(request: NextRequest) {
   try {
     const authResult = await requireAuth(request, ['ADMIN']);
@@ -260,7 +236,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const donationId = searchParams.get('id');
+    const donationId = searchParams.get('donationId');
 
     if (!donationId) {
       return NextResponse.json(
@@ -269,22 +245,17 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Check if donation exists
-    const existingDonation = await prisma.donation.findUnique({
-      where: { id: donationId }
-    });
+    const { error } = await supabase
+      .from('donations')
+      .delete()
+      .eq('id', donationId);
 
-    if (!existingDonation) {
+    if (error) {
       return NextResponse.json(
-        { error: 'Donation not found' },
-        { status: 404 }
+        { error: 'Failed to delete donation' },
+        { status: 500 }
       );
     }
-
-    // Delete donation
-    await prisma.donation.delete({
-      where: { id: donationId }
-    });
 
     return NextResponse.json({
       success: true,

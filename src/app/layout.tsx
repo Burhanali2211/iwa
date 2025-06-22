@@ -3,6 +3,7 @@ import { Inter, Amiri } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { Providers } from "./providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -33,14 +34,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr">
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${amiri.variable} antialiased bg-gray-50`}
+        className={`${inter.variable} ${amiri.variable} antialiased bg-background text-foreground`}
       >
-        <AuthProvider>
-          {children}
-          <Toaster position="top-right" />
-        </AuthProvider>
+        <Providers attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            {children}
+            <Toaster position="top-right" />
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );

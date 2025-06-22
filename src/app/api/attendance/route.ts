@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 
 const markAttendanceSchema = z.object({
   userId: z.string(),
@@ -34,59 +34,35 @@ export async function GET(request: NextRequest) {
     const month = searchParams.get('month');
     const year = searchParams.get('year');
 
-    const whereClause: { userId?: string; date?: { gte: Date; lte: Date } } = {};
+    let query = supabase
+      .from('attendances')
+      .select('*, users(name, email, role), students(roll_number, class, section), teachers(employee_id, department)');
 
     // If user is a student, only show their attendance
     if (authResult.user.role === 'STUDENT') {
-      whereClause.userId = authResult.user.userId;
+      query = query.eq('user_id', authResult.user.userId);
     } else if (userId) {
       // Teachers/Admin can filter by user
-      whereClause.userId = userId;
+      query = query.eq('user_id', userId);
     }
 
     // Date filtering
     if (startDate && endDate) {
-      whereClause.date = {
-        gte: new Date(startDate),
-        lte: new Date(endDate),
-      };
+      query = query.gte('date', startDate).lte('date', endDate);
     } else if (month && year) {
-      const startOfMonth = new Date(parseInt(year), parseInt(month) - 1, 1);
-      const endOfMonth = new Date(parseInt(year), parseInt(month), 0);
-      whereClause.date = {
-        gte: startOfMonth,
-        lte: endOfMonth,
-      };
+      const startOfMonth = new Date(parseInt(year), parseInt(month) - 1, 1).toISOString().slice(0, 10);
+      const endOfMonth = new Date(parseInt(year), parseInt(month), 0).toISOString().slice(0, 10);
+      query = query.gte('date', startOfMonth).lte('date', endOfMonth);
     }
 
-    const attendance = await prisma.attendance.findMany({
-      where: whereClause,
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-            role: true,
-          }
-        },
-        student: {
-          select: {
-            rollNumber: true,
-            class: true,
-            section: true,
-          }
-        },
-        teacher: {
-          select: {
-            employeeId: true,
-            department: true,
-          }
-        }
-      },
-      orderBy: {
-        date: 'desc'
-      }
-    });
+    const { data: attendance, error } = await query.order('date', { ascending: false });
+
+    if (error) {
+      return NextResponse.json(
+        { error: 'Failed to fetch attendance' },
+        { status: 500 }
+      );
+    }
 
     // Calculate attendance statistics
     const totalDays = attendance.length;
@@ -138,51 +114,37 @@ export async function POST(request: NextRequest) {
       
       for (const record of validatedData.attendanceRecords) {
         // Check if attendance already exists for this user and date
-        const existingAttendance = await prisma.attendance.findUnique({
-          where: {
-            userId_date: {
-              userId: record.userId,
-              date: new Date(validatedData.date),
-            }
-          }
-        });
+        const { data: existingAttendance } = await supabase
+          .from('attendances')
+          .select('id')
+          .eq('user_id', record.userId)
+          .eq('date', validatedData.date)
+          .single();
 
         if (existingAttendance) {
           // Update existing attendance
-          const updated = await prisma.attendance.update({
-            where: { id: existingAttendance.id },
-            data: {
+          const { data: updated } = await supabase
+            .from('attendances')
+            .update({
               status: record.status,
               remarks: record.remarks,
-            },
-            include: {
-              user: {
-                select: {
-                  name: true,
-                  email: true,
-                }
-              }
-            }
-          });
+            })
+            .eq('id', existingAttendance.id)
+            .select('*, users(name, email)')
+            .single();
           attendanceRecords.push(updated);
         } else {
           // Create new attendance record
-          const created = await prisma.attendance.create({
-            data: {
-              userId: record.userId,
-              date: new Date(validatedData.date),
+          const { data: created } = await supabase
+            .from('attendances')
+            .insert({
+              user_id: record.userId,
+              date: validatedData.date,
               status: record.status,
               remarks: record.remarks,
-            },
-            include: {
-              user: {
-                select: {
-                  name: true,
-                  email: true,
-                }
-              }
-            }
-          });
+            })
+            .select('*, users(name, email)')
+            .single();
           attendanceRecords.push(created);
         }
       }
@@ -198,61 +160,48 @@ export async function POST(request: NextRequest) {
       const validatedData = markAttendanceSchema.parse(body);
 
       // Check if attendance already exists
-      const existingAttendance = await prisma.attendance.findUnique({
-        where: {
-          userId_date: {
-            userId: validatedData.userId,
-            date: new Date(validatedData.date),
-          }
-        }
-      });
-
-      let attendance;
+      const { data: existingAttendance } = await supabase
+        .from('attendances')
+        .select('id')
+        .eq('user_id', validatedData.userId)
+        .eq('date', validatedData.date)
+        .single();
 
       if (existingAttendance) {
         // Update existing attendance
-        attendance = await prisma.attendance.update({
-          where: { id: existingAttendance.id },
-          data: {
+        const { data: updated } = await supabase
+          .from('attendances')
+          .update({
             status: validatedData.status,
             remarks: validatedData.remarks,
-          },
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-              }
-            }
-          }
+          })
+          .eq('id', existingAttendance.id)
+          .select('*, users(name, email)')
+          .single();
+        return NextResponse.json({
+          success: true,
+          message: 'Attendance updated successfully',
+          attendance: updated,
         });
       } else {
         // Create new attendance record
-        attendance = await prisma.attendance.create({
-          data: {
-            userId: validatedData.userId,
-            date: new Date(validatedData.date),
+        const { data: created } = await supabase
+          .from('attendances')
+          .insert({
+            user_id: validatedData.userId,
+            date: validatedData.date,
             status: validatedData.status,
             remarks: validatedData.remarks,
-          },
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-              }
-            }
-          }
+          })
+          .select('*, users(name, email)')
+          .single();
+        return NextResponse.json({
+          success: true,
+          message: 'Attendance marked successfully',
+          attendance: created,
         });
       }
-
-      return NextResponse.json({
-        success: true,
-        message: 'Attendance marked successfully',
-        attendance,
-      });
     }
-
   } catch (error) {
     console.error('Mark attendance error:', error);
     

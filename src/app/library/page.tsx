@@ -2,7 +2,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Link from 'next/link';
 import { BookOpen, Search, Download, Star, Clock, Users, Award, Eye, Library, Video, Heart, ArrowRight, Bookmark, Globe, Sparkles } from 'lucide-react';
-import Card, { FeatureCard, ServiceCard, StatCard } from '@/components/ui/Card';
+import { Card } from '@/components/ui/card';
 
 export default function LibraryPage() {
   const libraryServices = [
@@ -179,14 +179,35 @@ export default function LibraryPage() {
                     className="animate-scale-in"
                     style={{ animationDelay: `${index * 150}ms` }}
                   >
-                    <StatCard
-                      icon={stat.icon}
-                      label={stat.label}
-                      value={stat.value}
-                      color={colors[index]}
-                      bgColor={bgColors[index]}
+                    <Card
                       variant={variants[index]}
-                    />
+                      hover="lift"
+                      className={`h-full group-hover:scale-[1.02] transition-all duration-300 relative overflow-hidden ${
+                        colors[index]
+                      }`}
+                    >
+                      <div className="text-center relative z-10">
+                        <div className={`inline-flex p-4 rounded-full mb-6 shadow-lg ${
+                          bgColors[index]
+                        }`}>
+                          <stat.icon className={`h-8 w-8 ${
+                            colors[index]
+                          }`} />
+                        </div>
+
+                        <h3 className={`text-xl font-bold mb-4 ${
+                          colors[index]
+                        }`}>
+                          {stat.label}
+                        </h3>
+
+                        <p className={`leading-relaxed mb-6 ${
+                          colors[index]
+                        }`}>
+                          {stat.value}
+                        </p>
+                      </div>
+                    </Card>
                   </div>
                 );
               })}

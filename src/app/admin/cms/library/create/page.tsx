@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import CMSLayout from '@/components/admin/CMSLayout';
 import {
   Save,
   Eye,
@@ -189,367 +188,265 @@ export default function CreateLibraryBook() {
     { label: 'Add New Book' }
   ];
 
-  const actions = (
-    <div className="flex items-center space-x-3">
-      <button
-        onClick={() => router.back()}
-        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span>Back</span>
-      </button>
-      <button
-        onClick={(e) => handleSubmit(e, false)}
-        disabled={isLoading}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors disabled:opacity-50"
-      >
-        <Save className="h-4 w-4" />
-        <span>Save Draft</span>
-      </button>
-      <button
-        onClick={(e) => handleSubmit(e, true)}
-        disabled={isLoading}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors disabled:opacity-50"
-      >
-        <Eye className="h-4 w-4" />
-        <span>Publish</span>
-      </button>
-    </div>
-  );
-
   return (
-    <CMSLayout
-      title="Add New Book"
-      description="Add a new book to the Islamic library collection"
-      breadcrumbs={breadcrumbs}
-      actions={actions}
-    >
+    <div className="p-1">
+        <header className="bg-surface p-6 rounded-lg shadow-card mb-8">
+            <div className="flex justify-between items-center">
+                <div>
+                    <div className="flex items-center text-sm text-text-muted mb-2">
+                        {breadcrumbs.map((crumb, index) => (
+                            <span key={index} className="flex items-center">
+                                {index > 0 && <span className="mx-2">/</span>}
+                                {crumb.href ? (
+                                    <span className="cursor-pointer hover:text-foreground" onClick={() => router.push(crumb.href!)}>{crumb.label}</span>
+                                ) : (
+                                    <span>{crumb.label}</span>
+                                )}
+                            </span>
+                        ))}
+                    </div>
+                    <h1 className="text-3xl font-bold text-foreground">Add New Book</h1>
+                    <p className="text-text-secondary mt-1">Add a new book to the Islamic library collection</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button onClick={() => router.back()} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border text-text-secondary hover:bg-background">
+                        <ArrowLeft className="h-4 w-4" />
+                        Back
+                    </button>
+                    <button onClick={(e) => handleSubmit(e, true)} disabled={isLoading} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                        <Save className="h-4 w-4" />
+                        {isLoading ? 'Publishing...' : 'Publish'}
+                    </button>
+                </div>
+            </div>
+        </header>
+
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
-        {/* Book Type Selection */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Book Type</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {bookTypes.map((type) => {
-              const Icon = type.icon;
-              return (
-                <button
-                  key={type.value}
-                  type="button"
-                  onClick={() => handleInputChange('type', type.value)}
-                  className={`p-4 rounded-lg border-2 transition-all text-left ${
-                    formData.type === type.value
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <Icon className={`h-6 w-6 mb-2 ${
-                    formData.type === type.value ? 'text-green-600' : 'text-gray-600'
-                  }`} />
-                  <h4 className="font-medium text-gray-900">{type.label}</h4>
-                  <p className="text-sm text-gray-600 mt-1">{type.description}</p>
-                </button>
-              );
-            })}
-          </div>
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+            <h2 className="text-xl font-bold text-foreground mb-6">Book Type</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {bookTypes.map(({ value, label, icon: Icon, description }) => (
+                    <div
+                        key={value}
+                        onClick={() => handleInputChange('type', value)}
+                        className={`p-6 border-2 rounded-lg cursor-pointer transition-all ${
+                            formData.type === value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                        }`}
+                    >
+                        <Icon className={`h-8 w-8 mb-3 ${formData.type === value ? 'text-primary' : 'text-text-secondary'}`} />
+                        <h3 className="font-semibold text-foreground">{label}</h3>
+                        <p className="text-xs text-text-muted mt-1">{description}</p>
+                    </div>
+                ))}
+            </div>
         </div>
 
-        {/* Basic Information */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title *
-              </label>
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+          <h2 className="text-xl font-bold text-foreground mb-6">Book Details</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">Title *</label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.title ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Enter book title"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                placeholder="e.g., The Sealed Nectar"
               />
-              {errors.title && (
-                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-              )}
+              {errors.title && <p className="text-sm text-destructive mt-1">{errors.title}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Author *
-              </label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Author *</label>
               <input
                 type="text"
                 value={formData.author}
                 onChange={(e) => handleInputChange('author', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.author ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Enter author name"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                placeholder="e.g., Safiur Rahman Mubarakpuri"
               />
-              {errors.author && (
-                <p className="text-red-500 text-sm mt-1">{errors.author}</p>
-              )}
+              {errors.author && <p className="text-sm text-destructive mt-1">{errors.author}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                ISBN
-              </label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">ISBN</label>
               <input
                 type="text"
                 value={formData.isbn}
                 onChange={(e) => handleInputChange('isbn', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="978-1234567890"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                placeholder="e.g., 978-1591440710"
               />
             </div>
 
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">Description</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                placeholder="A brief summary of the book's content"
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+          <h2 className="text-xl font-bold text-foreground mb-6">Categorization</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Publisher
-              </label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Category *</label>
+              <select
+                value={formData.category}
+                onChange={(e) => handleInputChange('category', e.target.value)}
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+              >
+                <option value="">Select a category</option>
+                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
+              {errors.category && <p className="text-sm text-destructive mt-1">{errors.category}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Language *</label>
+              <select
+                value={formData.language}
+                onChange={(e) => handleInputChange('language', e.target.value)}
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+              >
+                <option value="">Select a language</option>
+                {languages.map(lang => <option key={lang} value={lang}>{lang}</option>)}
+              </select>
+              {errors.language && <p className="text-sm text-destructive mt-1">{errors.language}</p>}
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">Tags</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                  placeholder="Add a tag and press Enter"
+                />
+                <button type="button" onClick={addTag} className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Plus className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.tags.map(tag => (
+                  <div key={tag} className="flex items-center gap-2 bg-background border border-border rounded-full px-3 py-1 text-sm">
+                    {tag}
+                    <button type="button" onClick={() => removeTag(tag)}>
+                      <X className="h-4 w-4 text-text-muted hover:text-destructive" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+          <h2 className="text-xl font-bold text-foreground mb-6">Publication & Availability</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Publisher</label>
               <input
                 type="text"
                 value={formData.publisher}
                 onChange={(e) => handleInputChange('publisher', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Enter publisher name"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                placeholder="e.g., Dar-us-Salam"
               />
             </div>
-
+            
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category *
-              </label>
-              <select
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.category ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value="">Select a category</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-              {errors.category && (
-                <p className="text-red-500 text-sm mt-1">{errors.category}</p>
-              )}
+                <label className="block text-sm font-medium text-text-secondary mb-2">Published Year</label>
+                <input
+                    type="number"
+                    value={formData.publishedYear}
+                    onChange={(e) => handleInputChange('publishedYear', e.target.value ? parseInt(e.target.value) : '')}
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                    placeholder="e.g., 1996"
+                />
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Language *
-              </label>
-              <select
-                value={formData.language}
-                onChange={(e) => handleInputChange('language', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.language ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value="">Select a language</option>
-                {languages.map((language) => (
-                  <option key={language} value={language}>
-                    {language}
-                  </option>
-                ))}
-              </select>
-              {errors.language && (
-                <p className="text-red-500 text-sm mt-1">{errors.language}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Published Year
-              </label>
-              <input
-                type="number"
-                value={formData.publishedYear}
-                onChange={(e) => handleInputChange('publishedYear', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="2024"
-                min="1"
-                max={new Date().getFullYear()}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Number of Pages
-              </label>
-              <input
-                type="number"
-                value={formData.pages}
-                onChange={(e) => handleInputChange('pages', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="300"
-                min="1"
-              />
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="Brief description of the book content..."
-            />
-          </div>
-        </div>
-
-        {/* Type-specific Fields */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            {formData.type === 'both' ? 'Physical & Digital Details' : 
-             formData.type === 'digital' ? 'Digital Details' : 'Physical Details'}
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {(formData.type === 'digital' || formData.type === 'both') && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">Digital URL *</label>
+                <input
+                  type="text"
+                  value={formData.digitalUrl}
+                  onChange={(e) => handleInputChange('digitalUrl', e.target.value)}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                  placeholder="https://example.com/book.pdf"
+                />
+                {errors.digitalUrl && <p className="text-sm text-destructive mt-1">{errors.digitalUrl}</p>}
+              </div>
+            )}
+            
             {(formData.type === 'physical' || formData.type === 'both') && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Physical Location *
-                </label>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">Location *</label>
                 <input
                   type="text"
                   value={formData.location}
                   onChange={(e) => handleInputChange('location', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                    errors.location ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="e.g., Section A, Shelf 3"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                  placeholder="e.g., Shelf A-3, Main Hall"
                 />
-                {errors.location && (
-                  <p className="text-red-500 text-sm mt-1">{errors.location}</p>
-                )}
+                {errors.location && <p className="text-sm text-destructive mt-1">{errors.location}</p>}
               </div>
             )}
 
-            {(formData.type === 'digital' || formData.type === 'both') && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Digital URL *
-                </label>
-                <input
-                  type="url"
-                  value={formData.digitalUrl}
-                  onChange={(e) => handleInputChange('digitalUrl', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                    errors.digitalUrl ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="https://example.com/book.pdf"
-                />
-                {errors.digitalUrl && (
-                  <p className="text-red-500 text-sm mt-1">{errors.digitalUrl}</p>
-                )}
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cover Image URL
-              </label>
-              <input
-                type="url"
-                value={formData.coverImage}
-                onChange={(e) => handleInputChange('coverImage', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="https://example.com/cover.jpg"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Status
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => handleInputChange('status', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-                <option value="available">Available</option>
-                <option value="borrowed">Borrowed</option>
-                <option value="reserved">Reserved</option>
-                <option value="maintenance">Under Maintenance</option>
-              </select>
+            <div className="md:col-span-2 flex items-center gap-8">
+                <div className="flex items-center gap-3">
+                    <input
+                        type="checkbox"
+                        id="isPublished"
+                        checked={formData.isPublished}
+                        onChange={(e) => handleInputChange('isPublished', e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="isPublished" className="text-sm font-medium text-text-secondary">Publish on site</label>
+                </div>
+                <div className="flex items-center gap-3">
+                    <input
+                        type="checkbox"
+                        id="isFeatured"
+                        checked={formData.isFeatured}
+                        onChange={(e) => handleInputChange('isFeatured', e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="isFeatured" className="text-sm font-medium text-text-secondary">Mark as featured</label>
+                </div>
             </div>
           </div>
         </div>
 
-        {/* Tags */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
-          
-          <div className="flex flex-wrap gap-2 mb-4">
-            {formData.tags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800"
-              >
-                {tag}
-                <button
-                  type="button"
-                  onClick={() => removeTag(tag)}
-                  className="ml-2 text-green-600 hover:text-green-800"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-
-          <div className="flex space-x-2">
-            <input
-              type="text"
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="Add a tag"
-            />
+        <div className="flex justify-end gap-4 mt-8">
             <button
-              type="button"
-              onClick={addTag}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                type="button"
+                onClick={(e) => handleSubmit(e, false)}
+                disabled={isLoading}
+                className="px-6 py-2 border border-border rounded-md text-text-secondary hover:bg-background"
             >
-              <Plus className="h-4 w-4" />
-              <span>Add</span>
+                Save as Draft
             </button>
-          </div>
-        </div>
-
-        {/* Settings */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Settings</h3>
-          
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isFeatured"
-                checked={formData.isFeatured}
-                onChange={(e) => handleInputChange('isFeatured', e.target.checked)}
-                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-              />
-              <label htmlFor="isFeatured" className="ml-2 block text-sm text-gray-900">
-                Featured Book
-              </label>
-            </div>
-          </div>
+            <button
+                type="submit"
+                onClick={(e) => handleSubmit(e, true)}
+                disabled={isLoading}
+                className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+                {isLoading ? 'Publishing...' : 'Publish Book'}
+            </button>
         </div>
       </form>
-    </CMSLayout>
+    </div>
   );
 }

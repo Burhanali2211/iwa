@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import CMSLayout from '@/components/admin/CMSLayout';
 import {
   Plus,
   Edit,
@@ -144,51 +143,47 @@ export default function ReligiousContentCMS() {
     }
   };
 
-  // Since we're using API with pagination, we don't need client-side filtering
   const filteredContent = content;
-
-  const breadcrumbs = [
-    { label: 'Admin', href: '/admin' },
-    { label: 'CMS', href: '/admin/cms' },
-    { label: 'Religious Content' }
-  ];
-
-  const actions = (
-    <div className="flex items-center space-x-3">
-      <button
-        onClick={() => router.push('/admin/cms/religious/create')}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <Plus className="h-4 w-4" />
-        <span>Add Content</span>
-      </button>
-    </div>
-  );
 
   if (isLoading) {
     return (
-      <CMSLayout title="Religious Content CMS" breadcrumbs={breadcrumbs}>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
         </div>
-      </CMSLayout>
     );
   }
 
   return (
-    <CMSLayout 
-      title="Religious Content CMS" 
-      description="Manage Islamic articles, prayers, Quran content, and khutbas"
-      breadcrumbs={breadcrumbs}
-      actions={actions}
-    >
+    <div className="p-1">
+        <header className="bg-surface p-6 rounded-lg shadow-card mb-8">
+            <div className="flex justify-between items-center">
+                <div>
+                    <div className="flex items-center text-sm text-text-muted mb-2">
+                        <span className="cursor-pointer hover:text-foreground" onClick={() => router.push('/admin')}>Admin</span>
+                        <span className="mx-2">/</span>
+                        <span className="cursor-pointer hover:text-foreground" onClick={() => router.push('/admin/cms')}>CMS</span>
+                        <span className="mx-2">/</span>
+                        <span>Religious Content</span>
+                    </div>
+                    <h1 className="text-3xl font-bold text-foreground">Religious Content CMS</h1>
+                    <p className="text-text-secondary mt-1">Manage Islamic articles, prayers, Quran content, and khutbas</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button onClick={() => router.push('/admin/cms/religious/create')} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                        <Plus className="h-4 w-4" />
+                        Add Content
+                    </button>
+                </div>
+            </div>
+        </header>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-surface rounded-lg shadow-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Content</p>
-              <p className="text-2xl font-bold text-gray-900">{content.length}</p>
+              <p className="text-sm font-medium text-text-muted">Total Content</p>
+              <p className="text-2xl font-bold text-foreground">{content.length}</p>
             </div>
             <div className="bg-blue-100 p-3 rounded-lg">
               <FileText className="h-6 w-6 text-blue-600" />
@@ -196,11 +191,11 @@ export default function ReligiousContentCMS() {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-surface rounded-lg shadow-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Published</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-text-muted">Published</p>
+              <p className="text-2xl font-bold text-foreground">
                 {content.filter(c => c.isPublished).length}
               </p>
             </div>
@@ -210,11 +205,11 @@ export default function ReligiousContentCMS() {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-surface rounded-lg shadow-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Featured</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-text-muted">Featured</p>
+              <p className="text-2xl font-bold text-foreground">
                 {content.filter(c => c.isFeatured).length}
               </p>
             </div>
@@ -224,12 +219,12 @@ export default function ReligiousContentCMS() {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-surface rounded-lg shadow-card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Views</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {content.reduce((sum, c) => sum + c.views, 0)}
+              <p className="text-sm font-medium text-text-muted">Total Views</p>
+              <p className="text-2xl font-bold text-foreground">
+                {content.reduce((sum, c) => sum + c.views, 0).toLocaleString()}
               </p>
             </div>
             <div className="bg-purple-100 p-3 rounded-lg">
@@ -240,172 +235,110 @@ export default function ReligiousContentCMS() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-          <div className="flex items-center space-x-4">
+      <div className="bg-surface rounded-lg shadow-card p-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="col-span-1 md:col-span-1">
+            <label className="block text-sm font-medium text-text-secondary mb-2">Search</label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted" />
               <input
                 type="text"
-                placeholder="Search content..."
+                placeholder="Search by title, author, content..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary"
               />
             </div>
-            
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">Content Type</label>
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Types</option>
-              <option value="article">Articles</option>
-              <option value="prayer">Prayers</option>
+              <option value="article">Article</option>
+              <option value="prayer">Prayer</option>
               <option value="quran">Quran</option>
               <option value="khutba">Khutba</option>
-              <option value="dua">Duas</option>
+              <option value="dua">Dua</option>
             </select>
-            
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">Category</label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Categories</option>
-              <option value="Worship">Worship</option>
-              <option value="Khutba">Khutba</option>
-              <option value="Duas">Duas</option>
-              <option value="Quran Study">Quran Study</option>
+              {/* Add category options here */}
             </select>
-          </div>
-          
-          <div className="text-sm text-gray-600">
-            Showing {filteredContent.length} of {content.length} items
           </div>
         </div>
       </div>
 
-      {/* Content List */}
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Content
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Author
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Stats
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+      {/* Content Table */}
+      <div className="bg-surface rounded-lg shadow-card overflow-x-auto">
+        <table className="w-full text-left">
+          <thead className="bg-background">
+            <tr>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Title</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Type</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Category</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Status</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Last Modified</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Stats</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredContent.map((item) => (
+              <tr key={item.id} className="border-b border-border hover:bg-background">
+                <td className="p-4">
+                  <div>
+                      <p className="font-semibold text-foreground">{item.title}</p>
+                      <p className="text-sm text-text-muted">by {item.author}</p>
+                  </div>
+                </td>
+                <td className="p-4">
+                  <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(item.type)}`}>
+                    {getTypeIcon(item.type)}
+                    <span className="ml-1.5 capitalize">{item.type}</span>
+                  </span>
+                </td>
+                <td className="p-4 text-sm text-text-secondary">{item.category}</td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${item.isPublished ? 'bg-success/20 text-success' : 'bg-gray-200 text-gray-700'}`}>
+                    {item.isPublished ? 'Published' : 'Draft'}
+                  </span>
+                </td>
+                <td className="p-4 text-sm text-text-secondary">{formatDate(item.lastModified)}</td>
+                <td className="p-4 text-sm text-text-secondary">
+                    <div className="flex items-center gap-2">
+                        <Eye className="h-4 w-4" /> {item.views}
+                        <Star className="h-4 w-4" /> {item.likes}
+                    </div>
+                </td>
+                <td className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <button onClick={() => router.push(`/admin/cms/religious/${item.id}/edit`)} className="p-2 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-md">
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => router.push(`/religious/articles?id=${item.id}`)} className="p-2 text-text-secondary hover:text-info hover:bg-info/10 rounded-md">
+                      <Eye className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => handleDelete(item.id, item.title)} className="p-2 text-text-secondary hover:text-destructive hover:bg-destructive/10 rounded-md">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredContent.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="flex items-start space-x-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {item.title}
-                          </p>
-                          {item.isFeatured && (
-                            <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-500 truncate">
-                          {item.content.substring(0, 100)}...
-                        </p>
-                        <div className="flex items-center space-x-2 mt-1">
-                          {item.tags.slice(0, 3).map((tag, index) => (
-                            <span key={index} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(item.type)}`}>
-                      {getTypeIcon(item.type)}
-                      <span className="ml-1 capitalize">{item.type}</span>
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.author}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      item.isPublished 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {item.isPublished ? 'Published' : 'Draft'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex items-center space-x-4">
-                      <span className="flex items-center">
-                        <Eye className="h-4 w-4 mr-1" />
-                        {item.views}
-                      </span>
-                      <span className="flex items-center">
-                        <Star className="h-4 w-4 mr-1" />
-                        {item.likes}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.publishedAt ? formatDate(item.publishedAt) : formatDate(item.createdAt)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-2">
-                      <button
-                        onClick={() => router.push(`/admin/cms/religious/${item.id}`)}
-                        className="text-blue-600 hover:text-blue-900 p-1"
-                        title="View"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => router.push(`/admin/cms/religious/${item.id}/edit`)}
-                        className="text-green-600 hover:text-green-900 p-1"
-                        title="Edit"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.id, item.title)}
-                        className="text-red-600 hover:text-red-900 p-1"
-                        title="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </CMSLayout>
+    </div>
   );
 }

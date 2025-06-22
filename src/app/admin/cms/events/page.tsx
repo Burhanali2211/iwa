@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import CMSLayout from '@/components/admin/CMSLayout';
 import {
   Plus,
   Edit,
@@ -239,127 +238,117 @@ export default function EventsCMS() {
     return matchesSearch && matchesType && matchesStatus;
   });
 
-  const breadcrumbs = [
-    { label: 'Admin', href: '/admin' },
-    { label: 'CMS', href: '/admin/cms' },
-    { label: 'Events Management' }
-  ];
-
-  const actions = (
-    <div className="flex items-center space-x-3">
-      <button
-        onClick={() => {
-          // Export events functionality
-          toast.success('Events exported successfully');
-        }}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <Download className="h-4 w-4" />
-        <span>Export</span>
-      </button>
-      <button
-        onClick={() => router.push('/admin/cms/events/create')}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <Plus className="h-4 w-4" />
-        <span>Add Event</span>
-      </button>
-    </div>
-  );
-
   if (isLoading) {
     return (
-      <CMSLayout title="Events Management" breadcrumbs={breadcrumbs}>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
         </div>
-      </CMSLayout>
     );
   }
 
   return (
-    <CMSLayout 
-      title="Events Management" 
-      description="Create and manage Islamic center events and programs"
-      breadcrumbs={breadcrumbs}
-      actions={actions}
-    >
+    <div className="p-1">
+        <header className="bg-surface p-6 rounded-lg shadow-card mb-8">
+            <div className="flex justify-between items-center">
+                <div>
+                    <div className="flex items-center text-sm text-text-muted mb-2">
+                        <span className="cursor-pointer hover:text-foreground" onClick={() => router.push('/admin')}>Admin</span>
+                        <span className="mx-2">/</span>
+                        <span className="cursor-pointer hover:text-foreground" onClick={() => router.push('/admin/cms')}>CMS</span>
+                        <span className="mx-2">/</span>
+                        <span>Events</span>
+                    </div>
+                    <h1 className="text-3xl font-bold text-foreground">Events Management</h1>
+                    <p className="text-text-secondary mt-1">Manage all community events, registrations, and schedules.</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button className="flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border text-text-secondary hover:bg-background">
+                        <Download className="h-4 w-4" />
+                        Export
+                    </button>
+                    <button onClick={() => router.push('/admin/cms/events/create')} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                        <Plus className="h-4 w-4" />
+                        New Event
+                    </button>
+                </div>
+            </div>
+        </header>
+
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Events</p>
-              <p className="text-2xl font-bold text-gray-900">{stats?.totalEvents || events.length}</p>
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-surface rounded-lg shadow-card p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-text-muted">Total Events</p>
+                <p className="text-2xl font-bold text-foreground">{stats.totalEvents}</p>
+              </div>
+              <div className="bg-blue-100 p-3 rounded-lg">
+                <Calendar className="h-6 w-6 text-blue-600" />
+              </div>
             </div>
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <Calendar className="h-6 w-6 text-blue-600" />
+          </div>
+          
+          <div className="bg-surface rounded-lg shadow-card p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-text-muted">Upcoming Events</p>
+                <p className="text-2xl font-bold text-foreground">{stats.upcomingEvents}</p>
+              </div>
+              <div className="bg-green-100 p-3 rounded-lg">
+                <Clock className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-surface rounded-lg shadow-card p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-text-muted">Total Attendees</p>
+                <p className="text-2xl font-bold text-foreground">{stats.totalAttendees}</p>
+              </div>
+              <div className="bg-purple-100 p-3 rounded-lg">
+                <Users className="h-6 w-6 text-purple-600" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-surface rounded-lg shadow-card p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-text-muted">Featured Events</p>
+                <p className="text-2xl font-bold text-foreground">{stats.featuredEvents}</p>
+              </div>
+              <div className="bg-yellow-100 p-3 rounded-lg">
+                <Star className="h-6 w-6 text-yellow-600" />
+              </div>
             </div>
           </div>
         </div>
-        
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Upcoming</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {stats?.upcomingEvents || events.filter(e => getEventStatus(e).label === 'Upcoming').length}
-              </p>
-            </div>
-            <div className="bg-green-100 p-3 rounded-lg">
-              <Clock className="h-6 w-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Attendees</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {stats?.totalAttendees || events.reduce((sum, e) => sum + e.currentAttendees, 0)}
-              </p>
-            </div>
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <Users className="h-6 w-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Featured</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {stats?.featuredEvents || events.filter(e => e.isFeatured).length}
-              </p>
-            </div>
-            <div className="bg-yellow-100 p-3 rounded-lg">
-              <Star className="h-6 w-6 text-yellow-600" />
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-          <div className="flex items-center space-x-4">
+      <div className="bg-surface rounded-lg shadow-card p-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-1">
+            <label className="block text-sm font-medium text-text-secondary mb-2">Search Events</label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted" />
               <input
                 type="text"
-                placeholder="Search events..."
+                placeholder="Search by title, organizer..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary"
               />
             </div>
-            
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">Event Type</label>
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Types</option>
               <option value="religious">Religious</option>
@@ -368,133 +357,86 @@ export default function EventsCMS() {
               <option value="fundraising">Fundraising</option>
               <option value="youth">Youth</option>
             </select>
-            
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">Status</label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary"
             >
-              <option value="all">All Status</option>
+              <option value="all">All Statuses</option>
               <option value="upcoming">Upcoming</option>
               <option value="today">Today</option>
               <option value="past">Past</option>
             </select>
           </div>
-          
-          <div className="text-sm text-gray-600">
-            Showing {filteredEvents.length} of {events.length} events
-          </div>
         </div>
       </div>
 
-      {/* Events Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredEvents.map((event) => {
-          const status = getEventStatus(event);
-          return (
-            <div key={event.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
-              {event.imageUrl && (
-                <div className="aspect-video bg-gray-200 rounded-t-lg overflow-hidden">
-                  <Image
-                    src={event.imageUrl}
-                    alt={event.title}
-                    width={400}
-                    height={225}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-              
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-2">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getEventTypeColor(event.eventType)}`}>
-                      {event.eventType}
-                    </span>
-                    {event.isFeatured && (
-                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                    )}
-                  </div>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.color}`}>
-                    {status.label}
-                  </span>
-                </div>
-                
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{event.title}</h3>
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2">{event.description}</p>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    <span>{formatDate(event.startDate)}</span>
-                    {event.endDate && event.endDate !== event.startDate && (
-                      <span> - {formatDate(event.endDate)}</span>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Clock className="h-4 w-4 mr-2" />
-                    <span>{formatTime(event.startTime)}</span>
-                    {event.endTime && (
-                      <span> - {formatTime(event.endTime)}</span>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center text-sm text-gray-500">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    <span>{event.location}</span>
-                    {event.isOnline && (
-                      <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">Online</span>
-                    )}
-                  </div>
-                  
-                  {event.maxAttendees && (
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Users className="h-4 w-4 mr-2" />
-                      <span>{event.currentAttendees}/{event.maxAttendees} attendees</span>
+      {/* Events Table */}
+      <div className="bg-surface rounded-lg shadow-card overflow-x-auto">
+        <table className="w-full text-left">
+          <thead className="bg-background">
+            <tr>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Event</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Date & Time</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Location</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Attendees</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Status</th>
+              <th className="p-4 font-semibold text-sm text-text-secondary">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredEvents.map((event) => {
+              const status = getEventStatus(event);
+              return (
+                <tr key={event.id} className="border-b border-border hover:bg-background">
+                  <td className="p-4">
+                    <div className="flex items-center space-x-4">
+                      <Image
+                        src={event.imageUrl || '/event_placeholder.png'}
+                        alt={event.title}
+                        width={48}
+                        height={48}
+                        className="rounded-lg object-cover"
+                      />
+                      <div>
+                        <p className="font-semibold text-foreground">{event.title}</p>
+                        <p className={`text-xs px-2 py-0.5 mt-1 rounded-full inline-block ${getEventTypeColor(event.eventType)}`}>{event.eventType}</p>
+                      </div>
                     </div>
-                  )}
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="text-sm">
-                    <span className="font-medium text-gray-900">
-                      {event.price > 0 ? `$${event.price}` : 'Free'}
+                  </td>
+                  <td className="p-4 text-sm text-text-secondary">
+                    <div>{formatDate(event.startDate)}</div>
+                    <div className="text-xs text-text-muted">{formatTime(event.startTime)}</div>
+                  </td>
+                  <td className="p-4 text-sm text-text-secondary">{event.location}</td>
+                  <td className="p-4 text-sm text-text-secondary">{event.currentAttendees} / {event.maxAttendees || '∞'}</td>
+                  <td className="p-4">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${status.color}`}>
+                      {status.label}
                     </span>
-                    {event.registrationRequired && (
-                      <span className="ml-2 text-orange-600">Registration Required</span>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => router.push(`/admin/cms/events/${event.id}`)}
-                      className="text-blue-600 hover:text-blue-900 p-1"
-                      title="View"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => router.push(`/admin/cms/events/${event.id}/edit`)}
-                      className="text-green-600 hover:text-green-900 p-1"
-                      title="Edit"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(event.id, event.title)}
-                      className="text-red-600 hover:text-red-900 p-1"
-                      title="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center space-x-2">
+                        <button onClick={() => router.push(`/admin/cms/events/${event.id}/edit`)} className="p-2 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-md">
+                            <Edit className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => router.push(`/events/${event.id}`)} className="p-2 text-text-secondary hover:text-info hover:bg-info/10 rounded-md">
+                            <Eye className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleDelete(event.id, event.title)} className="p-2 text-text-secondary hover:text-destructive hover:bg-destructive/10 rounded-md">
+                            <Trash2 className="h-4 w-4" />
+                        </button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
       </div>
-    </CMSLayout>
+    </div>
   );
 }

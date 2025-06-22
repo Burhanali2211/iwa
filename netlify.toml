@@ -1,13 +1,28 @@
 [build]
-  command = "npm run build"
-  publish = ".next"
+  command = "next build"
 
 [build.environment]
   NODE_VERSION = "18"
-  NPM_VERSION = "9"
 
-# Disable Next.js plugin to avoid conflicts
+[functions]
+  directory = ".netlify/functions"
+
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[redirects]]
+  from = "/_next/image"
+  to = "/.netlify/images"
+  query = {url = ":url", w = ":width", q = ":quality"}
+  status = 200
+
+[[redirects]]
+  from = "/_ipx/*"
+  to = "/.netlify/images"
+  query = {url = ":url", w = ":width", q = ":quality"}
+  status = 200
+
 [[plugins]]
-  package = "@netlify/plugin-nextjs"
-  [plugins.inputs]
-    disabled = true
+  package = "@netlify/plugin-nextjs" 

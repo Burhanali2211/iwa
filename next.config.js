@@ -13,14 +13,7 @@ const nextConfig = {
   // Image optimization settings for Netlify
   images: {
     domains: ['localhost', 'netlify.app', 'netlify.com'],
-    unoptimized: true, // Required for static export
   },
-
-  // Output configuration for production builds
-  output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
-
-  // Server external packages (updated from experimental.serverComponentsExternalPackages)
-  serverExternalPackages: ['@prisma/client'],
 
   // Environment variables
   env: {
@@ -29,7 +22,17 @@ const nextConfig = {
 
   // Webpack configuration
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // Add any custom webpack configuration here
+    // Add CSS processing configuration
+    config.module.rules.forEach((rule) => {
+      if (rule.oneOf) {
+        rule.oneOf.forEach((oneOfRule) => {
+          if (oneOfRule.sideEffects === false) {
+            oneOfRule.sideEffects = true;
+          }
+        });
+      }
+    });
+
     return config;
   },
 

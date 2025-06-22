@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 
 // GET - Fetch dashboard statistics (Admin only)
 export async function GET(request: NextRequest) {
   try {
+    console.log('Admin stats API called');
+    
     const authResult = await requireAuth(request, ['ADMIN']);
     if ('error' in authResult) {
+      console.log('Auth failed:', authResult.error);
       return authResult.error;
     }
+
+    console.log('Auth successful, user:', authResult.user);
 
     // Get current date for monthly calculations
     const now = new Date();
@@ -17,134 +22,115 @@ export async function GET(request: NextRequest) {
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
 
+    console.log('Fetching database statistics...');
+
     // Fetch all statistics in parallel
     const [
+      totalUsersResult,
+      totalStudentsResult,
+      totalTeachersResult,
+      totalParentsResult,
+      activeUsersResult,
+      totalDonationsResult,
+      monthlyDonationsResult,
+      totalEventsResult,
+      upcomingEventsResult,
+      recentRegistrationsResult,
+      pendingAdmissionsResult,
+    ] = await Promise.all([
+      // Total users count
+      supabase.from('users').select('id', { count: 'exact', head: true }),
+      
+      // Total students count
+      supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'STUDENT'),
+      
+      // Total teachers count
+      supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'TEACHER'),
+      
+      // Total parents count
+      supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'PARENT'),
+      
+      // Active users count
+      supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_active', true),
+      
+      // Total donations count
+      supabase.from('donations').select('id', { count: 'exact', head: true }),
+      
+      // Monthly donations (current month)
+      supabase.from('donations')
+        .select('amount')
+        .gte('created_at', firstDayOfMonth.toISOString())
+        .lte('created_at', lastDayOfMonth.toISOString())
+        .eq('status', 'COMPLETED'),
+      
+      // Total events count
+      supabase.from('events').select('id', { count: 'exact', head: true }),
+      
+      // Upcoming events count
+      supabase.from('events')
+        .select('id', { count: 'exact', head: true })
+        .gte('start_date', now.toISOString()),
+      
+      // Recent registrations (last 30 days)
+      supabase.from('users')
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+      
+      // Pending admissions (students with 'Unassigned' class)
+      supabase.from('students')
+        .select('id', { count: 'exact', head: true })
+        .eq('class', 'Unassigned'),
+    ]);
+
+    console.log('Database queries completed');
+
+    // Extract counts
+    const totalUsers = totalUsersResult.count || 0;
+    const totalStudents = totalStudentsResult.count || 0;
+    const totalTeachers = totalTeachersResult.count || 0;
+    const totalParents = totalParentsResult.count || 0;
+    const activeUsers = activeUsersResult.count || 0;
+    const totalDonations = totalDonationsResult.count || 0;
+    const monthlyDonations = monthlyDonationsResult.data || [];
+    const totalEvents = totalEventsResult.count || 0;
+    const upcomingEvents = upcomingEventsResult.count || 0;
+    const recentRegistrations = recentRegistrationsResult.count || 0;
+    const pendingAdmissions = pendingAdmissionsResult.count || 0;
+
+    console.log('Extracted counts:', {
       totalUsers,
       totalStudents,
       totalTeachers,
       totalParents,
       activeUsers,
       totalDonations,
-      monthlyDonations,
       totalEvents,
       upcomingEvents,
-      totalArticles,
       recentRegistrations,
-      pendingAdmissions,
-    ] = await Promise.all([
-      // Total users count
-      prisma.user.count(),
-      
-      // Total students count
-      prisma.user.count({
-        where: { role: 'STUDENT' }
-      }),
-      
-      // Total teachers count
-      prisma.user.count({
-        where: { role: 'TEACHER' }
-      }),
-      
-      // Total parents count
-      prisma.user.count({
-        where: { role: 'PARENT' }
-      }),
-      
-      // Active users count
-      prisma.user.count({
-        where: { isActive: true }
-      }),
-      
-      // Total donations count
-      prisma.donation.count(),
-      
-      // Monthly donations (current month)
-      prisma.donation.findMany({
-        where: {
-          createdAt: {
-            gte: firstDayOfMonth,
-            lte: lastDayOfMonth,
-          },
-          status: 'COMPLETED',
-        },
-        select: {
-          amount: true,
-        },
-      }),
-      
-      // Total events count
-      prisma.event.count(),
-      
-      // Upcoming events count
-      prisma.event.count({
-        where: {
-          startDate: {
-            gte: now,
-          },
-        },
-      }),
-      
-      // Total articles count
-      prisma.article.count(),
-      
-      // Recent registrations (last 30 days)
-      prisma.user.count({
-        where: {
-          createdAt: {
-            gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
-          },
-        },
-      }),
-      
-      // Pending admissions (students with 'Unassigned' class)
-      prisma.student.count({
-        where: {
-          class: 'Unassigned',
-        },
-      }),
-    ]);
+      pendingAdmissions
+    });
 
     // Calculate monthly revenue
     const monthlyRevenue = monthlyDonations.reduce((sum, donation) => sum + donation.amount, 0);
 
     // Get recent activities
-    const recentUsers = await prisma.user.findMany({
-      where: {
-        createdAt: {
-          gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 5,
-      select: {
-        id: true,
-        name: true,
-        role: true,
-        createdAt: true,
-      },
-    });
+    const recentUsersResult = await supabase
+      .from('users')
+      .select('id, name, role, created_at')
+      .gte('created_at', new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(5);
 
-    const recentDonations = await prisma.donation.findMany({
-      where: {
-        createdAt: {
-          gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
-        },
-        status: 'COMPLETED',
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 5,
-      select: {
-        id: true,
-        donorName: true,
-        amount: true,
-        donationType: true,
-        createdAt: true,
-      },
-    });
+    const recentDonationsResult = await supabase
+      .from('donations')
+      .select('id, donor_name, amount, donation_type, created_at')
+      .gte('created_at', new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString())
+      .eq('status', 'COMPLETED')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    const recentUsers = recentUsersResult.data || [];
+    const recentDonations = recentDonationsResult.data || [];
 
     // Format recent activities
     const recentActivities = [
@@ -152,15 +138,15 @@ export async function GET(request: NextRequest) {
         id: `user-${user.id}`,
         type: 'user_registered' as const,
         message: `New ${user.role.toLowerCase()} registration: ${user.name}`,
-        timestamp: user.createdAt.toISOString(),
+        timestamp: user.created_at,
         user: user.name,
       })),
       ...recentDonations.map(donation => ({
         id: `donation-${donation.id}`,
         type: 'donation_received' as const,
-        message: `Donation received: ₹${donation.amount.toLocaleString()} for ${donation.donationType}`,
-        timestamp: donation.createdAt.toISOString(),
-        user: donation.donorName,
+        message: `Donation received: ₹${donation.amount.toLocaleString()} for ${donation.donation_type}`,
+        timestamp: donation.created_at,
+        user: donation.donor_name,
       })),
     ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 10);
 
@@ -175,7 +161,7 @@ export async function GET(request: NextRequest) {
       monthlyRevenue,
       totalEvents,
       upcomingEvents,
-      totalArticles,
+      totalArticles: 0, // Not implemented yet
       recentRegistrations,
       pendingAdmissions,
       
@@ -188,9 +174,11 @@ export async function GET(request: NextRequest) {
       recentActivities,
       
       // Additional metrics
-      averageDonation: totalDonations > 0 ? monthlyRevenue / monthlyDonations.length : 0,
+      averageDonation: monthlyDonations.length > 0 ? monthlyRevenue / monthlyDonations.length : 0,
       activeUsersPercentage: totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0,
     };
+
+    console.log('Returning stats:', stats);
 
     return NextResponse.json({
       success: true,
@@ -198,9 +186,9 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Get dashboard stats error:', error);
+    console.error('Failed to fetch admin stats:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch dashboard statistics' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -248,39 +236,15 @@ export async function POST(request: NextRequest) {
 
     switch (metric) {
       case 'user_registrations':
-        result = await prisma.user.groupBy({
-          by: ['role'],
-          where: whereClause,
-          _count: {
-            id: true,
-          },
-        });
+        result = await supabase.from('users').select('id', { count: 'exact', head: true }).eq('created_at', whereClause.createdAt);
         break;
         
       case 'donations':
-        result = await prisma.donation.groupBy({
-          by: ['donationType'],
-          where: {
-            ...whereClause,
-            status: 'COMPLETED',
-          },
-          _sum: {
-            amount: true,
-          },
-          _count: {
-            id: true,
-          },
-        });
+        result = await supabase.from('donations').select('id', { count: 'exact', head: true }).eq('created_at', whereClause.createdAt).eq('status', 'COMPLETED');
         break;
         
       case 'attendance':
-        result = await prisma.attendance.groupBy({
-          by: ['status'],
-          where: whereClause,
-          _count: {
-            id: true,
-          },
-        });
+        result = await supabase.from('attendances').select('id', { count: 'exact', head: true }).eq('created_at', whereClause.createdAt);
         break;
         
       default:

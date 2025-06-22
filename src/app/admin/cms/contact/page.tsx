@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import CMSLayout from '@/components/admin/CMSLayout';
 import {
   Phone,
   Mail,
@@ -15,7 +14,6 @@ import {
   MessageSquare,
   Globe,
   Users,
-  Building,
   ExternalLink
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -218,378 +216,299 @@ export default function ContactManagementCMS() {
     });
   };
 
-  const breadcrumbs = [
-    { label: 'Admin', href: '/admin' },
-    { label: 'CMS', href: '/admin/cms' },
-    { label: 'Contact Management' }
-  ];
-
-  const actions = (
-    <div className="flex items-center space-x-3">
-      <button
-        onClick={() => window.open('/contact', '_blank')}
-        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <Eye className="h-4 w-4" />
-        <span>Preview Contact</span>
-      </button>
-      <button
-        onClick={() => router.push('/admin/cms/contact/create')}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <Plus className="h-4 w-4" />
-        <span>Add Contact Info</span>
-      </button>
-    </div>
-  );
-
   if (isLoading) {
     return (
-      <CMSLayout title="Contact Management CMS" breadcrumbs={breadcrumbs}>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
         </div>
-      </CMSLayout>
     );
   }
 
   return (
-    <CMSLayout 
-      title="Contact Management CMS" 
-      description="Manage contact information, forms, and location details"
-      breadcrumbs={breadcrumbs}
-      actions={actions}
-    >
+    <div className="p-1">
+        <header className="bg-surface p-6 rounded-lg shadow-card mb-8">
+            <div className="flex justify-between items-center">
+                <div>
+                    <div className="flex items-center text-sm text-text-muted mb-2">
+                        <span className="cursor-pointer hover:text-foreground" onClick={() => router.push('/admin')}>Admin</span>
+                        <span className="mx-2">/</span>
+                        <span className="cursor-pointer hover:text-foreground" onClick={() => router.push('/admin/cms')}>CMS</span>
+                        <span className="mx-2">/</span>
+                        <span>Contact</span>
+                    </div>
+                    <h1 className="text-3xl font-bold text-foreground">Contact Management</h1>
+                    <p className="text-text-secondary mt-1">Manage all contact information, forms, and submissions.</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button onClick={() => window.open('/contact', '_blank')} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border text-text-secondary hover:bg-background">
+                        <Eye className="h-4 w-4" />
+                        Preview
+                    </button>
+                    <button onClick={() => router.push('/admin/cms/contact/create')} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                        <Plus className="h-4 w-4" />
+                        Add Contact
+                    </button>
+                </div>
+            </div>
+        </header>
+
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Contacts</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalContacts}</p>
-              </div>
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <Phone className="h-6 w-6 text-blue-600" />
-              </div>
+            <div className="bg-surface rounded-lg shadow-card p-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm font-medium text-text-muted">Total Contacts</p>
+                        <p className="text-2xl font-bold text-foreground">{stats.totalContacts}</p>
+                    </div>
+                    <div className="bg-blue-100 p-3 rounded-lg"><Users className="h-6 w-6 text-blue-600" /></div>
+                </div>
             </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active Forms</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.activeForms}</p>
-              </div>
-              <div className="bg-green-100 p-3 rounded-lg">
-                <FileText className="h-6 w-6 text-green-600" />
-              </div>
+            <div className="bg-surface rounded-lg shadow-card p-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm font-medium text-text-muted">Active Forms</p>
+                        <p className="text-2xl font-bold text-foreground">{stats.activeForms}</p>
+                    </div>
+                    <div className="bg-green-100 p-3 rounded-lg"><FileText className="h-6 w-6 text-green-600" /></div>
+                </div>
             </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Monthly Submissions</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.monthlySubmissions}</p>
-              </div>
-              <div className="bg-purple-100 p-3 rounded-lg">
-                <MessageSquare className="h-6 w-6 text-purple-600" />
-              </div>
+            <div className="bg-surface rounded-lg shadow-card p-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm font-medium text-text-muted">Monthly Submissions</p>
+                        <p className="text-2xl font-bold text-foreground">{stats.monthlySubmissions}</p>
+                    </div>
+                    <div className="bg-purple-100 p-3 rounded-lg"><MessageSquare className="h-6 w-6 text-purple-600" /></div>
+                </div>
             </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Response Rate</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.responseRate}%</p>
-              </div>
-              <div className="bg-orange-100 p-3 rounded-lg">
-                <Users className="h-6 w-6 text-orange-600" />
-              </div>
+            <div className="bg-surface rounded-lg shadow-card p-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm font-medium text-text-muted">Response Rate</p>
+                        <p className="text-2xl font-bold text-foreground">{stats.responseRate}%</p>
+                    </div>
+                    <div className="bg-orange-100 p-3 rounded-lg"><Clock className="h-6 w-6 text-orange-600" /></div>
+                </div>
             </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Avg Response Time</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.averageResponseTime}h</p>
-              </div>
-              <div className="bg-red-100 p-3 rounded-lg">
-                <Clock className="h-6 w-6 text-red-600" />
-              </div>
+            <div className="bg-surface rounded-lg shadow-card p-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm font-medium text-text-muted">Avg. Response Time</p>
+                        <p className="text-2xl font-bold text-foreground">{stats.averageResponseTime}h</p>
+                    </div>
+                    <div className="bg-indigo-100 p-3 rounded-lg"><Clock className="h-6 w-6 text-indigo-600" /></div>
+                </div>
             </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Public Contacts</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.publicContacts}</p>
-              </div>
-              <div className="bg-indigo-100 p-3 rounded-lg">
-                <Globe className="h-6 w-6 text-indigo-600" />
-              </div>
+            <div className="bg-surface rounded-lg shadow-card p-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm font-medium text-text-muted">Public Contacts</p>
+                        <p className="text-2xl font-bold text-foreground">{stats.publicContacts}</p>
+                    </div>
+                    <div className="bg-teal-100 p-3 rounded-lg"><Globe className="h-6 w-6 text-teal-600" /></div>
+                </div>
             </div>
-          </div>
         </div>
       )}
 
-      {/* Tab Navigation */}
-      <div className="bg-white rounded-lg shadow-sm border mb-8">
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
-            {[
-              { id: 'overview', label: 'Overview', icon: Phone },
-              { id: 'info', label: 'Contact Info', icon: Building },
-              { id: 'forms', label: 'Forms', icon: FileText },
-              { id: 'location', label: 'Location', icon: MapPin }
-            ].map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as 'overview' | 'info' | 'forms' | 'location')}
-                  className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                    activeTab === tab.id
-                      ? 'border-green-500 text-green-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
+      {/* Tabs */}
+      <div className="mb-8">
+        <div className="border-b border-border">
+          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+            <button
+                onClick={() => setActiveTab('overview')}
+                className={`${
+                    activeTab === 'overview'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-text-muted hover:text-text-secondary hover:border-border'
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+                Overview
+            </button>
+            <button
+                onClick={() => setActiveTab('info')}
+                className={`${
+                    activeTab === 'info'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-text-muted hover:text-text-secondary hover:border-border'
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+                Contact Info
+            </button>
+            <button
+                onClick={() => setActiveTab('forms')}
+                className={`${
+                    activeTab === 'forms'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-text-muted hover:text-text-secondary hover:border-border'
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+                Forms
+            </button>
+            <button
+                onClick={() => setActiveTab('location')}
+                className={`${
+                    activeTab === 'location'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-text-muted hover:text-text-secondary hover:border-border'
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+                Location & Map
+            </button>
           </nav>
         </div>
-
-        <div className="p-6">
-          {activeTab === 'overview' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Contact Information */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
-                <div className="space-y-4">
-                  {contactInfo.slice(0, 5).map((contact) => (
-                    <div key={contact.id} className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      <div className={`p-2 rounded-lg ${getContactColor(contact.type)}`}>
-                        {getContactIcon(contact.type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900">{contact.label}</p>
-                        <p className="text-sm text-gray-600">{contact.value}</p>
-                        <div className="flex items-center space-x-2 mt-2">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            contact.isPublic ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {contact.isPublic ? 'Public' : 'Private'}
-                          </span>
-                          <span className="text-xs text-gray-400">Updated {formatDate(contact.lastModified)}</span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => router.push(`/admin/cms/contact/info/${contact.id}`)}
-                        className="text-green-600 hover:text-green-700"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-1 gap-4">
-                  <button
-                    onClick={() => router.push('/admin/cms/contact/info/create')}
-                    className="flex items-center space-x-3 p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors text-left"
-                  >
-                    <Phone className="h-6 w-6 text-blue-600" />
-                    <div>
-                      <p className="font-medium text-gray-900">Add Contact Info</p>
-                      <p className="text-sm text-gray-600">Add new contact information</p>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => router.push('/admin/cms/contact/forms/create')}
-                    className="flex items-center space-x-3 p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors text-left"
-                  >
-                    <FileText className="h-6 w-6 text-green-600" />
-                    <div>
-                      <p className="font-medium text-gray-900">Create Contact Form</p>
-                      <p className="text-sm text-gray-600">Design new contact forms</p>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => router.push('/admin/cms/contact/location')}
-                    className="flex items-center space-x-3 p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors text-left"
-                  >
-                    <MapPin className="h-6 w-6 text-purple-600" />
-                    <div>
-                      <p className="font-medium text-gray-900">Update Location</p>
-                      <p className="text-sm text-gray-600">Manage address and map details</p>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => router.push('/admin/cms/contact/submissions')}
-                    className="flex items-center space-x-3 p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors text-left"
-                  >
-                    <MessageSquare className="h-6 w-6 text-orange-600" />
-                    <div>
-                      <p className="font-medium text-gray-900">View Submissions</p>
-                      <p className="text-sm text-gray-600">Review form submissions</p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'info' && (
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Contact Information Management</h3>
-                <button
-                  onClick={() => router.push('/admin/cms/contact/info/create')}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Add Contact Info</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {contactInfo.map((contact) => (
-                  <div key={contact.id} className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`p-3 rounded-lg ${getContactColor(contact.type)}`}>
-                        {getContactIcon(contact.type)}
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          contact.isPublic ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {contact.isPublic ? 'Public' : 'Private'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <h4 className="font-semibold text-gray-900 mb-2">{contact.label}</h4>
-                    <p className="text-gray-600 mb-4">{contact.value}</p>
-
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                      <span>Order: {contact.order}</span>
-                      <span>Updated {formatDate(contact.lastModified)}</span>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => router.push(`/admin/cms/contact/info/${contact.id}`)}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors"
-                      >
-                        Edit
-                      </button>
-                      <button className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm transition-colors">
-                        <Eye className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'forms' && (
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Contact Forms Management</h3>
-                <button
-                  onClick={() => router.push('/admin/cms/contact/forms/create')}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Create Form</span>
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                {forms.map((form) => (
-                  <div key={form.id} className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-1">{form.name}</h4>
-                        <p className="text-gray-600 mb-3">{form.description}</p>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span>{form.fields.length} fields</span>
-                          <span>{form.submissions} submissions</span>
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            form.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {form.isActive ? 'Active' : 'Inactive'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-500">Last modified</p>
-                        <p className="text-xs text-gray-400">{formatDate(form.lastModified)}</p>
-                      </div>
-                    </div>
-
-                    <div className="mb-4">
-                      <p className="text-sm font-medium text-gray-700 mb-2">Form Fields:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {form.fields.map((field, index) => (
-                          <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                            {field.replace('_', ' ')}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => router.push(`/admin/cms/contact/forms/${form.id}`)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm transition-colors"
-                      >
-                        Edit Form
-                      </button>
-                      <button
-                        onClick={() => router.push(`/admin/cms/contact/forms/${form.id}/submissions`)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition-colors"
-                      >
-                        View Submissions ({form.submissions})
-                      </button>
-                      <button className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm transition-colors">
-                        <ExternalLink className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'location' && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Location Management</h3>
-
-              <div className="bg-gray-50 rounded-lg p-8 text-center">
-                <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">Location and map management interface will be implemented here.</p>
-                <p className="text-sm text-gray-500 mt-2">This will include address management, map integration, and directions.</p>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
-    </CMSLayout>
+      
+      {/* Content based on active tab */}
+      {activeTab === 'overview' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 bg-surface rounded-lg shadow-card p-6">
+                <h3 className="text-lg font-bold text-foreground mb-4">Quick Actions</h3>
+                <div className="grid grid-cols-2 gap-4">
+                    <button className="flex items-center gap-3 p-4 bg-background rounded-lg hover:bg-primary/10 transition-colors">
+                        <Phone className="h-6 w-6 text-primary"/>
+                        <div>
+                            <p className="font-semibold text-foreground">Add Phone Number</p>
+                            <p className="text-xs text-text-muted">Add a new contact number</p>
+                        </div>
+                    </button>
+                    <button className="flex items-center gap-3 p-4 bg-background rounded-lg hover:bg-primary/10 transition-colors">
+                        <Mail className="h-6 w-6 text-primary"/>
+                        <div>
+                            <p className="font-semibold text-foreground">Add Email Address</p>
+                            <p className="text-xs text-text-muted">Add a new email for inquiries</p>
+                        </div>
+                    </button>
+                    <button className="flex items-center gap-3 p-4 bg-background rounded-lg hover:bg-primary/10 transition-colors">
+                        <FileText className="h-6 w-6 text-primary"/>
+                        <div>
+                            <p className="font-semibold text-foreground">Create a Form</p>
+                            <p className="text-xs text-text-muted">Build a new contact form</p>
+                        </div>
+                    </button>
+                    <button className="flex items-center gap-3 p-4 bg-background rounded-lg hover:bg-primary/10 transition-colors">
+                        <ExternalLink className="h-6 w-6 text-primary"/>
+                        <div>
+                            <p className="font-semibold text-foreground">Add Social Link</p>
+                            <p className="text-xs text-text-muted">Link to a social media profile</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            <div className="bg-surface rounded-lg shadow-card p-6">
+                <h3 className="text-lg font-bold text-foreground mb-4">Recently Added</h3>
+                <ul className="space-y-3">
+                    {contactInfo.slice(0, 5).map(item => (
+                        <li key={item.id} className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-full ${getContactColor(item.type)}`}>
+                                    {getContactIcon(item.type)}
+                                </div>
+                                <div>
+                                    <p className="font-medium text-foreground">{item.label}</p>
+                                    <p className="text-xs text-text-muted">{item.value}</p>
+                                </div>
+                            </div>
+                            <span className="text-xs text-text-muted">{formatDate(item.lastModified)}</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+      )}
+
+      {activeTab === 'info' && (
+        <div className="bg-surface rounded-lg shadow-card">
+          <table className="w-full text-left">
+            <thead className="bg-background">
+              <tr>
+                <th className="p-4 font-semibold text-sm text-text-secondary">Type</th>
+                <th className="p-4 font-semibold text-sm text-text-secondary">Label</th>
+                <th className="p-4 font-semibold text-sm text-text-secondary">Value</th>
+                <th className="p-4 font-semibold text-sm text-text-secondary">Public</th>
+                <th className="p-4 font-semibold text-sm text-text-secondary">Last Modified</th>
+                <th className="p-4 font-semibold text-sm text-text-secondary">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {contactInfo.map((item) => (
+                <tr key={item.id} className="border-b border-border last:border-b-0 hover:bg-background">
+                    <td className="p-4">
+                        <span className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${getContactColor(item.type)}`}>
+                            {getContactIcon(item.type)}
+                            {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+                        </span>
+                    </td>
+                    <td className="p-4 font-medium text-foreground">{item.label}</td>
+                    <td className="p-4 text-text-secondary">{item.value}</td>
+                    <td className="p-4">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${item.isPublic ? 'bg-success/20 text-success' : 'bg-gray-200 text-gray-700'}`}>
+                            {item.isPublic ? 'Yes' : 'No'}
+                        </span>
+                    </td>
+                    <td className="p-4 text-sm text-text-muted">{formatDate(item.lastModified)}</td>
+                    <td className="p-4">
+                        <button className="p-2 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-md">
+                            <Edit className="h-4 w-4" />
+                        </button>
+                    </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {activeTab === 'forms' && (
+        <div className="bg-surface rounded-lg shadow-card">
+          <table className="w-full text-left">
+            <thead className="bg-background">
+              <tr>
+                <th className="p-4 font-semibold text-sm text-text-secondary">Form Name</th>
+                <th className="p-4 font-semibold text-sm text-text-secondary">Status</th>
+                <th className="p-4 font-semibold text-sm text-text-secondary">Submissions</th>
+                <th className="p-4 font-semibold text-sm text-text-secondary">Last Modified</th>
+                <th className="p-4 font-semibold text-sm text-text-secondary">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {forms.map((form) => (
+                <tr key={form.id} className="border-b border-border last:border-b-0 hover:bg-background">
+                    <td className="p-4">
+                        <p className="font-semibold text-foreground">{form.name}</p>
+                        <p className="text-xs text-text-muted">{form.description}</p>
+                    </td>
+                    <td className="p-4">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${form.isActive ? 'bg-success/20 text-success' : 'bg-gray-200 text-gray-700'}`}>
+                            {form.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td className="p-4 text-text-secondary">{form.submissions}</td>
+                    <td className="p-4 text-sm text-text-muted">{formatDate(form.lastModified)}</td>
+                    <td className="p-4">
+                        <div className="flex items-center gap-2">
+                            <button className="p-2 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-md">
+                                <Eye className="h-4 w-4" />
+                            </button>
+                            <button className="p-2 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-md">
+                                <Edit className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {activeTab === 'location' && (
+        <div className="text-center py-12 bg-surface rounded-lg shadow-card">
+            <h3 className="text-lg font-medium text-foreground">Location & Map Settings</h3>
+            <p className="mt-2 text-sm text-text-muted">Map configuration and location details will be managed here.</p>
+        </div>
+      )}
+    </div>
   );
 }

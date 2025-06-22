@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import CMSLayout from '@/components/admin/CMSLayout';
 import { 
   Save, 
   Eye, 
@@ -122,25 +121,25 @@ export default function CreateSchoolContent() {
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Duration
               </label>
               <input
                 type="text"
                 value={String(formData.metadata.duration || '')}
                 onChange={(e) => handleMetadataChange('duration', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
                 placeholder="e.g., 6 months, 12 weeks"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Level
               </label>
               <select
                 value={String(formData.metadata.level || '')}
                 onChange={(e) => handleMetadataChange('level', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
               >
                 <option value="">Select level</option>
                 <option value="beginner">Beginner</option>
@@ -149,14 +148,14 @@ export default function CreateSchoolContent() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Prerequisites
               </label>
               <input
                 type="text"
                 value={String(formData.metadata.prerequisites || '')}
                 onChange={(e) => handleMetadataChange('prerequisites', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
                 placeholder="e.g., Basic Arabic reading"
               />
             </div>
@@ -167,13 +166,13 @@ export default function CreateSchoolContent() {
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Priority
               </label>
               <select
                 value={String(formData.metadata.priority || '')}
                 onChange={(e) => handleMetadataChange('priority', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
               >
                 <option value="">Select priority</option>
                 <option value="low">Low</option>
@@ -183,14 +182,14 @@ export default function CreateSchoolContent() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Expiry Date
               </label>
               <input
                 type="date"
                 value={String(formData.metadata.expiryDate || '')}
                 onChange={(e) => handleMetadataChange('expiryDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -200,26 +199,26 @@ export default function CreateSchoolContent() {
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Department
               </label>
               <input
                 type="text"
                 value={String(formData.metadata.department || '')}
                 onChange={(e) => handleMetadataChange('department', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
                 placeholder="e.g., Islamic Studies, Arabic Language"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Qualifications
               </label>
               <input
                 type="text"
                 value={String(formData.metadata.qualifications || '')}
                 onChange={(e) => handleMetadataChange('qualifications', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
                 placeholder="e.g., PhD in Islamic Studies"
               />
             </div>
@@ -230,40 +229,47 @@ export default function CreateSchoolContent() {
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Due Date
               </label>
               <input
                 type="date"
                 value={String(formData.metadata.dueDate || '')}
                 onChange={(e) => handleMetadataChange('dueDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Subject
               </label>
               <input
                 type="text"
                 value={String(formData.metadata.subject || '')}
                 onChange={(e) => handleMetadataChange('subject', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="e.g., Quran Studies, Islamic History"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                placeholder="e.g., Fiqh, Hadith"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Grade
               </label>
               <input
                 type="text"
                 value={String(formData.metadata.grade || '')}
                 onChange={(e) => handleMetadataChange('grade', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
                 placeholder="e.g., Grade 8, Level 2"
               />
             </div>
+          </div>
+        );
+
+      case 'timetable':
+        return (
+          <div>
+            <p className="text-sm text-text-secondary">Timetable specific fields can be added here.</p>
           </div>
         );
 
@@ -279,135 +285,129 @@ export default function CreateSchoolContent() {
     { label: 'Create Content' }
   ];
 
-  const actions = (
-    <div className="flex items-center space-x-3">
-      <button
-        onClick={() => router.back()}
-        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span>Back</span>
-      </button>
-      <button
-        onClick={(e) => handleSubmit(e, false)}
-        disabled={isLoading}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors disabled:opacity-50"
-      >
-        <Save className="h-4 w-4" />
-        <span>Save Draft</span>
-      </button>
-      <button
-        onClick={(e) => handleSubmit(e, true)}
-        disabled={isLoading}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors disabled:opacity-50"
-      >
-        <Eye className="h-4 w-4" />
-        <span>Publish</span>
-      </button>
-    </div>
-  );
-
   return (
-    <CMSLayout
-      title="Create School Content"
-      description="Add new content to the school management system"
-      breadcrumbs={breadcrumbs}
-      actions={actions}
-    >
-      <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
-        {/* Content Type Selection */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Content Type</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {contentTypes.map((type) => {
-              const Icon = type.icon;
-              return (
-                <button
-                  key={type.value}
-                  type="button"
-                  onClick={() => handleInputChange('type', type.value)}
-                  className={`p-4 rounded-lg border-2 transition-all text-left ${
-                    formData.type === type.value
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <Icon className={`h-6 w-6 mb-2 ${
-                    formData.type === type.value ? 'text-green-600' : 'text-gray-600'
-                  }`} />
-                  <h4 className="font-medium text-gray-900">{type.label}</h4>
-                  <p className="text-sm text-gray-600 mt-1">{type.description}</p>
-                </button>
-              );
-            })}
+    <div className="p-1">
+      <header className="bg-surface p-6 rounded-lg shadow-card mb-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <div className="flex items-center text-sm text-text-muted mb-2">
+              {breadcrumbs.map((crumb, index) => (
+                <span key={index} className="flex items-center">
+                  {index > 0 && <span className="mx-2">/</span>}
+                  {crumb.href ? (
+                    <span className="cursor-pointer hover:text-foreground" onClick={() => router.push(crumb.href!)}>{crumb.label}</span>
+                  ) : (
+                    <span>{crumb.label}</span>
+                  )}
+                </span>
+              ))}
+            </div>
+            <h1 className="text-3xl font-bold text-foreground">Create School Content</h1>
+            <p className="text-text-secondary mt-1">Add a new course, announcement, faculty member, etc.</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <button onClick={() => router.back()} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md border border-border text-text-secondary hover:bg-background">
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </button>
+            <button onClick={(e) => handleSubmit(e, true)} disabled={isLoading} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+              <Save className="h-4 w-4" />
+              {isLoading ? 'Publishing...' : 'Publish'}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+          <h2 className="text-xl font-bold text-foreground mb-6">Content Type</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {contentTypes.map(({ value, label, icon: Icon, description }) => (
+              <div
+                key={value}
+                onClick={() => handleInputChange('type', value)}
+                className={`p-6 border-2 rounded-lg cursor-pointer transition-all ${
+                  formData.type === value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <Icon className={`h-8 w-8 mb-3 ${formData.type === value ? 'text-primary' : 'text-text-secondary'}`} />
+                <h3 className="font-semibold text-foreground">{label}</h3>
+                <p className="text-xs text-text-muted mt-1">{description}</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Basic Information */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+          <h2 className="text-xl font-bold text-foreground mb-6">Content Details</h2>
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Title *
               </label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.title ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
                 placeholder="Enter content title"
               />
-              {errors.title && (
-                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-              )}
+              {errors.title && <p className="text-sm text-destructive mt-1">{errors.title}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Description *
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 rows={3}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.description ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Brief description of the content"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary"
+                placeholder="A brief summary of the content"
               />
-              {errors.description && (
-                <p className="text-red-500 text-sm mt-1">{errors.description}</p>
-              )}
+              {errors.description && <p className="text-sm text-destructive mt-1">{errors.description}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Content
+              <label className="block text-sm font-medium text-text-secondary mb-2">
+                Main Content (Markdown supported)
               </label>
               <textarea
                 value={formData.content}
                 onChange={(e) => handleInputChange('content', e.target.value)}
-                rows={8}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Enter the detailed content..."
+                rows={10}
+                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:ring-2 focus:ring-primary font-mono text-sm"
+                placeholder="Write your main content here..."
               />
             </div>
           </div>
         </div>
 
-        {/* Type-specific Fields */}
-        {renderTypeSpecificFields() && (
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              {formData.type.charAt(0).toUpperCase() + formData.type.slice(1)} Details
-            </h3>
-            {renderTypeSpecificFields()}
-          </div>
-        )}
+        <div className="bg-surface p-8 rounded-lg shadow-card">
+          <h2 className="text-xl font-bold text-foreground mb-6">Metadata</h2>
+          {renderTypeSpecificFields()}
+        </div>
+
+        <div className="flex justify-end gap-4 mt-8">
+          <button
+            type="button"
+            onClick={(e) => handleSubmit(e, false)}
+            disabled={isLoading}
+            className="px-6 py-2 border border-border rounded-md text-text-secondary hover:bg-background"
+          >
+            Save as Draft
+          </button>
+          <button
+            type="submit"
+            onClick={(e) => handleSubmit(e, true)}
+            disabled={isLoading}
+            className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          >
+            {isLoading ? 'Publishing...' : 'Publish Content'}
+          </button>
+        </div>
       </form>
-    </CMSLayout>
+    </div>
   );
 }

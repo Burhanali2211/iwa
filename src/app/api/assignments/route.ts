@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 
 const createAssignmentSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   subject: z.string().min(1, 'Subject is required'),
   class: z.string().min(1, 'Class is required'),
-  dueDate: z.string(),
-  maxMarks: z.number().positive('Max marks must be positive'),
+  due_date: z.string(),
+  max_marks: z.number().positive('Max marks must be positive'),
   instructions: z.string().optional(),
   attachments: z.array(z.string()).optional(),
 });
-
-
 
 // GET - Fetch assignments
 export async function GET(request: NextRequest) {
@@ -28,66 +26,65 @@ export async function GET(request: NextRequest) {
     const subject = searchParams.get('subject');
     const classFilter = searchParams.get('class');
 
-    const whereClause: { class?: string; teacherId?: string; subject?: string } = {};
+    let query = supabase
+      .from('assignments')
+      .select(`
+        *,
+        teachers!inner(
+          *,
+          users!inner(name, email)
+        ),
+        assignment_submissions(*)
+      `);
 
     // If user is a student, filter by their class and assignments assigned to them
     if (authResult.user.role === 'STUDENT') {
-      const student = await prisma.student.findUnique({
-        where: { userId: authResult.user.userId }
-      });
+      const { data: student } = await supabase
+        .from('students')
+        .select('class')
+        .eq('user_id', authResult.user.userId)
+        .single();
       
       if (student) {
-        whereClause.class = student.class;
+        query = query.eq('class', student.class);
       }
     } else if (authResult.user.role === 'TEACHER') {
       // Teachers can see assignments they created
-      const teacher = await prisma.teacher.findUnique({
-        where: { userId: authResult.user.userId }
-      });
+      const { data: teacher } = await supabase
+        .from('teachers')
+        .select('id')
+        .eq('user_id', authResult.user.userId)
+        .single();
       
       if (teacher) {
-        whereClause.teacherId = teacher.id;
+        query = query.eq('teacher_id', teacher.id);
       }
     }
 
     // Apply filters
     if (subject) {
-      whereClause.subject = subject;
+      query = query.eq('subject', subject);
     }
 
     if (classFilter && authResult.user.role !== 'STUDENT') {
-      whereClause.class = classFilter;
+      query = query.eq('class', classFilter);
     }
 
-    const assignments = await prisma.assignment.findMany({
-      where: whereClause,
-      include: {
-        teacher: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-              }
-            }
-          }
-        },
-        submissions: authResult.user.role === 'STUDENT' ? {
-          where: {
-            userId: authResult.user.userId
-          }
-        } : true,
-      },
-      orderBy: {
-        dueDate: 'asc'
-      }
-    });
+    const { data: assignments, error } = await query.order('due_date', { ascending: true });
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch assignments' },
+        { status: 500 }
+      );
+    }
 
     // Add submission status for students
     const assignmentsWithStatus = assignments.map(assignment => {
       if (authResult.user.role === 'STUDENT') {
-        const userSubmission = assignment.submissions.find(
-          (sub: { userId: string }) => sub.userId === authResult.user.userId
+        const userSubmission = assignment.assignment_submissions.find(
+          (sub: { user_id: string }) => sub.user_id === authResult.user.userId
         );
         
         return {
@@ -99,7 +96,7 @@ export async function GET(request: NextRequest) {
       
       return {
         ...assignment,
-        submissionCount: assignment.submissions.length,
+        submissionCount: assignment.assignment_submissions.length,
       };
     });
 
@@ -129,9 +126,11 @@ export async function POST(request: NextRequest) {
     const validatedData = createAssignmentSchema.parse(body);
 
     // Get teacher profile
-    const teacher = await prisma.teacher.findUnique({
-      where: { userId: authResult.user.userId }
-    });
+    const { data: teacher } = await supabase
+      .from('teachers')
+      .select('id')
+      .eq('user_id', authResult.user.userId)
+      .single();
 
     if (!teacher && authResult.user.role === 'TEACHER') {
       return NextResponse.json(
@@ -140,31 +139,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const assignment = await prisma.assignment.create({
-      data: {
+    const { data: assignment, error } = await supabase
+      .from('assignments')
+      .insert({
         title: validatedData.title,
         description: validatedData.description,
         subject: validatedData.subject,
         class: validatedData.class,
-        dueDate: new Date(validatedData.dueDate),
-        maxMarks: validatedData.maxMarks,
+        due_date: validatedData.due_date,
+        max_marks: validatedData.max_marks,
         instructions: validatedData.instructions,
         attachments: JSON.stringify(validatedData.attachments || []),
-        teacherId: teacher?.id || 'admin',
-      },
-      include: {
-        teacher: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-              }
-            }
-          }
-        }
-      }
-    });
+        teacher_id: teacher?.id || 'admin',
+      })
+      .select(`
+        *,
+        teachers!inner(
+          *,
+          users!inner(name, email)
+        )
+      `)
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return NextResponse.json(
+        { error: 'Failed to create assignment' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,

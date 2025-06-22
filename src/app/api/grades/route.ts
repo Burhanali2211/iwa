@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 
 const createGradeSchema = z.object({
   studentId: z.string(),
@@ -27,52 +27,34 @@ export async function GET(request: NextRequest) {
     const subject = searchParams.get('subject');
     const examName = searchParams.get('examName');
 
-    const whereClause: { userId?: string; studentId?: string; subject?: string; examName?: string } = {};
+    let query = supabase
+      .from('exam_results')
+      .select('*, students(*, users(name, email)), teachers(*, users(name, email))');
 
     // If user is a student, only show their grades
     if (authResult.user.role === 'STUDENT') {
-      whereClause.userId = authResult.user.userId;
+      query = query.eq('user_id', authResult.user.userId);
     } else if (studentId) {
       // Teachers/Admin can filter by student
-      whereClause.studentId = studentId;
+      query = query.eq('student_id', studentId);
     }
 
     if (subject) {
-      whereClause.subject = subject;
+      query = query.eq('subject', subject);
     }
 
     if (examName) {
-      whereClause.examName = examName;
+      query = query.eq('exam_name', examName);
     }
 
-    const grades = await prisma.examResult.findMany({
-      where: whereClause,
-      include: {
-        student: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-              }
-            }
-          }
-        },
-        teacher: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-              }
-            }
-          }
-        }
-      },
-      orderBy: {
-        examDate: 'desc'
-      }
-    });
+    const { data: grades, error } = await query.order('exam_date', { ascending: false });
+
+    if (error) {
+      return NextResponse.json(
+        { error: 'Failed to fetch grades' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -100,9 +82,11 @@ export async function POST(request: NextRequest) {
     const validatedData = createGradeSchema.parse(body);
 
     // Get teacher profile
-    const teacher = await prisma.teacher.findUnique({
-      where: { userId: authResult.user.userId }
-    });
+    const { data: teacher } = await supabase
+      .from('teachers')
+      .select('id')
+      .eq('user_id', authResult.user.userId)
+      .single();
 
     if (!teacher && authResult.user.role === 'TEACHER') {
       return NextResponse.json(
@@ -125,32 +109,29 @@ export async function POST(request: NextRequest) {
       else calculatedGrade = 'F';
     }
 
-    const grade = await prisma.examResult.create({
-      data: {
-        studentId: validatedData.studentId,
-        userId: validatedData.studentId, // Assuming studentId is the user ID
-        teacherId: teacher?.id || 'admin',
-        examName: validatedData.examName,
+    const { data: grade, error } = await supabase
+      .from('exam_results')
+      .insert({
+        student_id: validatedData.studentId,
+        user_id: validatedData.studentId, // Assuming studentId is the user ID
+        teacher_id: teacher?.id || 'admin',
+        exam_name: validatedData.examName,
         subject: validatedData.subject,
-        maxMarks: validatedData.maxMarks,
-        obtainedMarks: validatedData.obtainedMarks,
+        max_marks: validatedData.maxMarks,
+        obtained_marks: validatedData.obtainedMarks,
         grade: calculatedGrade,
         remarks: validatedData.remarks,
-        examDate: new Date(validatedData.examDate),
-      },
-      include: {
-        student: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-              }
-            }
-          }
-        }
-      }
-    });
+        exam_date: validatedData.examDate,
+      })
+      .select('*, students(*, users(name, email))')
+      .single();
+
+    if (error) {
+      return NextResponse.json(
+        { error: 'Failed to create grade' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
